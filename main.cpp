@@ -15,6 +15,6 @@ int main() {
     cpu.init(&mem);
     while(!cpu.finish()) {
         cpu.execute();
-        cpu.execute();
+        cpu.flush();
     }
 }
