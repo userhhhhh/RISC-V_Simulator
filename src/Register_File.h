@@ -29,6 +29,7 @@ public:
     void print();
     RegisterFile& operator= (const RegisterFile& rf);
     void update_independence(int reg_index, int Rob_index);
+    void display();
 };
 
 #endif //RISC5_REGISTER_FILE_H

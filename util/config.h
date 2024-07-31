@@ -7,7 +7,7 @@
 const int MEMORY_SIZE = 1 << 20;
 const int RS_SIZE = 16;
 const int LSB_SIZE = 16;
-const int ROB_SIZE = 16;
+const int ROB_SIZE = 1;
 
 enum class RobType {
     reg, store, branch, exit
@@ -26,7 +26,7 @@ enum class InstructionType {
     J  // 1101111
     // END:0ff00513
 };
-enum class OptType {
+enum OptType {
     LUI, AUIPC,
     JAL,
     JALR,

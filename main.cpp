@@ -9,6 +9,7 @@ int main() {
                << std::filesystem::current_path() << std::endl;
      freopen("/home/hqs123/class_code/RISC-V-Simulator-2024/sample/sample.data","r",stdin);
 //     freopen("./testcases/superloop.data","r",stdin);
+//     freopen("C:\\Users\\31447\\CLionProjects\\RISC5\\0.out","w",stdout);
 
     Memory mem;
     mem.init();

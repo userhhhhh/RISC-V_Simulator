@@ -51,8 +51,7 @@ void Rob::step(){
             }
             break;
         case RobType::exit:
-            //TODO
-            break;
+            throw reg->registers[10].value & 0xff;
     }
 }
 void Rob::add(InstrRob instr) {
@@ -64,6 +63,14 @@ void Rob::add(InstrRob instr) {
 }
 int Rob::get_tail_next(){
     return (buffer.tail + 1) % ROB_SIZE;
+}
+void Rob::display() {
+    std::cout << "-------ROB--------" << std::endl;
+    std::cout << "PC:" << PC << std::endl;
+    for(auto it = buffer.begin(); it != buffer.end(); ++it){
+        std::cout << "id:" << it->id << " ready:" << it->ready << " busy:" << it->busy << " type:" << (int)it->type << " rs1:" << it->rs1 << " rs2:" << it->rs2 << " imm:" << it->imm << " rd:" << it->rd << " output:" << it->output << std::endl;
+    }
+    std::cout << "----------------------" << std::endl;
 }
 
 

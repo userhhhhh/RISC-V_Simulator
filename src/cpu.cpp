@@ -1,5 +1,7 @@
 #include "cpu.h"
 
+#define DEBUG
+
 void CPU::init(Memory *mem_in) {
     mem = mem_in;
     instr.init(mem);
@@ -11,16 +13,31 @@ void CPU::init(Memory *mem_in) {
     reg.init(&rob);
 }
 void CPU::execute() {
-    instr.decoder(rob.PC, decoder.pc, rob.flag_clear, decoder.flag);
+    instr.decoder(decoder.ready_next, rob.PC, decoder.pc, rob.flag_clear, decoder.flag);
+#ifdef DEBUG
+    instr.display();
+#endif
     decoder.step();
+#ifdef DEBUG
+    decoder.display();
+#endif
     rob.step();
+#ifdef DEBUG
+    rob.display();
+#endif
     rs.step();
     lsb.step();
+#ifdef DEBUG
+//    lsb.display();
+#endif
     alu.step();
     reg.execute(rob.flag_clear);
+#ifdef DEBUG
+//    reg.display();
+#endif
 }
 void CPU::flush() {
-    instr.flush();
+    instr.flush(decoder.ready_next);
     decoder.flush();
     rob.flush();
     rs.flush();

@@ -3,12 +3,20 @@
 void Instruction::init(Memory *mem_in) {
     mem = mem_in;
 }
-void Instruction::flush(){
+void Instruction::flush(bool decoder_read_next){
+    if(!decoder_read_next){
+        return;
+    }
     pc = pc_next;
     instr = instr_next;
+    instrAddr = instrAddr_next;
+    ready = ready_next;
 }
 
-int Instruction::get_pc(unsigned Rob_pc, unsigned decoder_pc, bool Rob_flag, bool decoder_flag) const {
+int Instruction::get_pc(bool decoder_ready_next, unsigned Rob_pc, unsigned decoder_pc, bool Rob_flag, bool decoder_flag) const {
+    if(decoder_ready_next){
+        return -1;
+    }
     int pc_index;
     if(Rob_flag){
         pc_index = (int) Rob_pc;
@@ -20,11 +28,16 @@ int Instruction::get_pc(unsigned Rob_pc, unsigned decoder_pc, bool Rob_flag, boo
     return pc_index;
 }
 
-void Instruction::decoder(unsigned Rob_pc, unsigned decoder_pc, bool Rob_flag, bool decoder_flag) {
-    int pc_index = get_pc(Rob_pc, decoder_pc, Rob_flag, decoder_flag);
+void Instruction::decoder(bool decoder_ready_next, unsigned Rob_pc, unsigned decoder_pc, bool Rob_flag, bool decoder_flag) {
+    int pc_index = get_pc(decoder_ready_next, Rob_pc, decoder_pc, Rob_flag, decoder_flag);
+    if(pc_index == -1){
+        ready_next = false;
+        return;
+    }
     int instr_get = (int)mem->fetch_32(pc_index);
     instrAddr_next = pc_index;
     pc_next = pc_index + 4;
+    ready_next = true;
     decode(instr_get);
 }
 
@@ -135,6 +148,28 @@ void Instruction::decode(int src) {
             }
             break;
     }
+}
+
+void Instruction::display() {
+    std::cout << "-------Instruction--------" << std::endl;
+    std::cout << "pc:" << pc << "    ";
+    std::cout << "instrAddr:" << instrAddr << std::endl;
+    std::cout << "opt:" << instr.opt << "    ";
+    std::cout << "rs1:" << instr.rs1 << "    ";
+    std::cout << "rs2:" << instr.rs2 << "    ";
+    std::cout << "rd:" << instr.rd << "     ";
+    std::cout << "imm:" << instr.imm << "    ";
+    std::cout << "ready:" << ready << std::endl;
+
+    std::cout << "pc_next:" << pc_next << "    ";
+    std::cout << "instrAddr_next:" << instrAddr_next << std::endl;
+    std::cout << "opt_next:" << instr_next.opt << "    ";
+    std::cout << "rs1_next:" << instr_next.rs1 << "    ";
+    std::cout << "rs2_next:" << instr_next.rs2 << "    ";
+    std::cout << "rd_next:" << instr_next.rd << "     ";
+    std::cout << "imm_next:" << instr_next.imm << "    ";
+    std::cout << "ready_next:" << ready_next << std::endl;
+    std::cout << "--------------------------" << std::endl;
 }
 
 

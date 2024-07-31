@@ -22,7 +22,7 @@ public:
     bool flag_Ri, flag_Rj;
     int result;
 
-    int Rob_id;
+    int Rob_id = -1;
 
     bool to_execute; //判断能否执行
 
@@ -50,6 +50,10 @@ public:
     void push(LSB_Entry x);
     LSB_Data get_data();
     void update_data();
+    void display();
+    int get_index();
+    bool judge_ready(int i);
+    bool judge_stop(int i);
     void Send_to_Rob(int rob_id, uint32_t value);
     void clear();
     void print();

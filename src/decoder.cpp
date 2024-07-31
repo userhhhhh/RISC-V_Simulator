@@ -11,6 +11,7 @@ void Decoder::step() {
     execute(*instr_in);
 }
 void Decoder::execute(Instruction &instr) {
+    flag_next = false;
     if(!instr.ready){
         return;
     }
@@ -21,18 +22,30 @@ void Decoder::execute(Instruction &instr) {
 
     switch (instr.instr.opt) {
         case OptType::LUI:
+            if(rob->buffer.isFull()){
+                ready_next = false;
+                break;
+            }
             instrRob.opt = OptType::LUI;
             instrRob.rd = instr.instr.rd;
             instrRob.imm = instr.instr.imm;
             Rob_flag = true;
             break;
         case OptType::AUIPC:
+            if(rob->buffer.isFull()){
+                ready_next = false;
+                break;
+            }
             instrRob.opt = OptType::AUIPC;
             instrRob.rd = instr.instr.rd;
             instrRob.imm = instr.instr.imm;
             Rob_flag = true;
             break;
         case OptType::JAL:
+            if(rob->buffer.isFull()){
+                ready_next = false;
+                break;
+            }
             instrRob.opt = OptType::JAL;
             instrRob.rd = instr.instr.rd;
             instrRob.imm = instr.instr.imm;
@@ -41,6 +54,11 @@ void Decoder::execute(Instruction &instr) {
             pc_next = (int) instr.instrAddr + instr.instr.imm;
             break;
         case OptType::JALR:
+            // TODO
+            if(rob->buffer.isFull()){
+                ready_next = false;
+                break;
+            }
             instrRob.opt = OptType::JALR;
             instrRob.rd = instr.instr.rd;
             instrRob.rs1 = instr.instr.rs1;
@@ -139,7 +157,13 @@ void Decoder::execute(Instruction &instr) {
         lsb->add(instrLsb);
     }
 }
+
 void Decoder::func_branch(Instruction &instr){
+    // TODO
+    if(rob->buffer.isFull()){
+        ready_next = false;
+        return;
+    }
     instrRob.opt = instr.instr.opt;
     instrRob.Rob_opt = get_RobType(instr);
     instrRob.rs1 = instr.instr.rs1;
@@ -174,6 +198,10 @@ void Decoder::get_Rj(Instruction & instr){
     }
 }
 void Decoder::func_load(Instruction &instr){
+    if(rob->buffer.isFull() || lsb->buffer.isFull()){
+        ready_next = false;
+        return;
+    }
     instrRob.opt = instr.instr.opt;
     instrRob.rd = instr.instr.rd;
     instrRob.rs1 = instr.instr.rs1;
@@ -186,6 +214,10 @@ void Decoder::func_load(Instruction &instr){
     LSB_flag = true;
 }
 void Decoder::func_store(Instruction &instr){
+    if(rob->buffer.isFull() || lsb->buffer.isFull()){
+        ready_next = false;
+        return;
+    }
     instrRob.opt = instr.instr.opt;
     instrRob.Rob_opt = get_RobType(instr);
     instrRob.rs1 = instr.instr.rs1;
@@ -249,6 +281,10 @@ RobType Decoder::get_RobType(Instruction &instr) {
     }
 }
 void Decoder::func_cal_imm(Instruction &instr){
+    if(rob->buffer.isFull() || rs->isFull()){
+        ready_next = false;
+        return;
+    }
     instrRob.opt = instr.instr.opt;
     instrRob.Rob_opt = get_RobType(instr);
     instrRob.rs1 = instr.instr.rs1;
@@ -261,6 +297,10 @@ void Decoder::func_cal_imm(Instruction &instr){
     RS_flag = true;
 }
 void Decoder::func_cal(Instruction &instr){
+    if(rob->buffer.isFull() || rs->isFull()){
+        ready_next = false;
+        return;
+    }
     instrRob.opt = instr.instr.opt;
     instrRob.Rob_opt = get_RobType(instr);
     instrRob.rs1 = instr.instr.rs1;
@@ -273,10 +313,22 @@ void Decoder::func_cal(Instruction &instr){
     RS_flag = true;
 }
 void Decoder::func_exit(Instruction &instr) {
+    // TODO
     instrRob.opt = OptType::DELETE;
     Rob_flag = true;
 }
 void Decoder::flush() {
     flag = flag_next;
     pc = pc_next;
+}
+void Decoder::display() {
+    std::cout << "-------Decoder--------" << std::endl;
+    std::cout << "Rob_flag: " << Rob_flag << "    ";
+    std::cout << "RS_flag: " << RS_flag << "    ";
+    std::cout << "LSB_flag: " << LSB_flag << std::endl;
+    std::cout << "flag:" << flag << "    ";
+    std::cout << "pc:" << pc << std::endl;
+    std::cout << "flag_next:" << flag_next << "    ";
+    std::cout << "pc_next:" << pc_next << std::endl;
+    std::cout << "----------------------" << std::endl;
 }

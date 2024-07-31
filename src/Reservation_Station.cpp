@@ -5,6 +5,12 @@ void Reservation_Station::init(Rob* rob_in, LSB* lsb_in, ALU* alu_in){
     lsb = lsb_in;
     alu = alu_in;
 }
+bool Reservation_Station::isFull(){
+    for(int i = 0; i < RS_SIZE; i++){
+        if(!buffer[i].busy) return false;
+    }
+    return true;
+}
 void Reservation_Station::add(InstrRS &instrRs) {
     int index = -1;
     bool flag = false;
@@ -31,11 +37,17 @@ void Reservation_Station::flush(){
         buffer[i] = buffer_next[i];
     }
 }
+bool Reservation_Station::judge_next(int i){
+    LSB_Data lsbData = lsb->get_data();
+    bool judge1 = buffer[i].busy;
+    bool judge2 = !buffer[i].flag_Ri || (buffer[i].Qi == lsbData.Rob_id && lsbData.ready) || (buffer[i].Qi == alu->Rob_id && alu->ready);
+    bool judge3 = !buffer[i].flag_Rj || (buffer[i].Qj == lsbData.Rob_id && lsbData.ready) || (buffer[i].Qj == alu->Rob_id && alu->ready);
+    if(judge1 && judge2 && judge3) return true;
+    return false;
+}
 int Reservation_Station::get_next() {
     for(int i = 0; i < RS_SIZE; i++){
-        if(!buffer[i].flag_Ri || !buffer[i].flag_Rj){
-            return i;
-        }
+        if(judge_next(i)) return i;
     }
     return -1;
 }
@@ -117,5 +129,17 @@ void Reservation_Station::update_data(){
             }
         }
     }
+}
+void Reservation_Station::display(){
+    std::cout << "-------Reservation Station--------" << std::endl;
+//    for(int i = 0; i < RS_SIZE; i++){
+//        std::cout << "RS[" << i << "]: ";
+//        if(buffer[i].busy){
+//            std::cout << "busy" << std::endl;
+//        }else{
+//            std::cout << "empty" << std::endl;
+//        }
+//    }
+    std::cout << "---------------------------------" << std::endl;
 }
 

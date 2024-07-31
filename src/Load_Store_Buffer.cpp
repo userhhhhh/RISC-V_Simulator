@@ -45,7 +45,8 @@ void LSB::step(){
 
     //TODO
     update_data();
-    int index = (buffer.head + 1) % LSB_SIZE;
+    int index = get_index();
+    if(index == -1) return;
     auto entry= buffer[index];
     buffer_next.pop();
 
@@ -61,6 +62,34 @@ void LSB::step(){
     else if(entry.opt >= LSType::SB && entry.opt <= LSType::SW){
         reg_file->write(get_Ri, entry.Rob_id, get_Rj);
     }
+}
+
+int LSB::get_index(){
+    if(buffer.isEmpty()) return -1;
+    int start = (buffer.head + 1) % LSB_SIZE;
+    for(int i = start; i != (buffer.tail + 1) % LSB_SIZE; i = (i + 1) % LSB_SIZE){
+        if(buffer[i].to_execute) return i;
+        if(judge_ready(i)) return i;
+        if(judge_stop(i)) return -1;
+    }
+    return -1;
+}
+bool LSB::judge_ready(int i){
+    RS_Data rsData = rs->get_data();
+    bool judge1 = buffer[i].flag_Ri || (!buffer[i].flag_Ri && rsData.Rob_id == buffer[i].Rob_id);
+    bool judge2 = buffer[i].flag_Rj || (!buffer[i].flag_Rj && rsData.Rob_id == buffer[i].Rob_id);
+    bool judge3 = buffer[i].Rob_id == rob->buffer.head + 1;
+    bool judge4 = buffer[i].busy;
+    if(judge1 && judge2 && judge3 && judge4) {
+        return true;
+    }
+    return false;
+}
+bool LSB::judge_stop(int i){
+    if(buffer[i].busy && buffer[i].opt >= LSType::SB && buffer[i].opt <= LSType::SW){
+        return true;
+    }
+    return false;
 }
 void LSB::push(LSB_Entry x){
     buffer_next.push(x);
@@ -82,7 +111,7 @@ void LSB::update_data(){
             }
         }
     }
-    if(rob->buffer.head + 1 == buffer.front().Rob_id && !buffer.front().to_execute){
+    if((rob->buffer.head + 1) % ROB_SIZE == buffer.front().Rob_id && !buffer.front().to_execute){
         buffer[buffer.head + 1].to_execute = true;
     }
 }
@@ -92,4 +121,22 @@ LSB_Data LSB::get_data() {
     data.Rob_id = buffer.front().Rob_id;
     data.value = buffer.front().result;
     return data;
+}
+void LSB::display() {
+    std::cout << "-------LSB--------" << std::endl;
+    for(int i = 0; i < LSB_SIZE; i++){
+        std::cout << "LSB[" << i << "]: ";
+        std::cout << "ready: " << buffer[i].ready << " ";
+        std::cout << "busy: " << buffer[i].busy << " ";
+        std::cout << "Ri: " << buffer[i].Ri << " ";
+        std::cout << "Rj: " << buffer[i].Rj << " ";
+        std::cout << "Qi: " << buffer[i].Qi << " ";
+        std::cout << "Qj: " << buffer[i].Qj << " ";
+        std::cout << "flag_Ri: " << buffer[i].flag_Ri << " ";
+        std::cout << "flag_Rj: " << buffer[i].flag_Rj << " ";
+        std::cout << "result: " << buffer[i].result << " ";
+        std::cout << "Rob_id: " << buffer[i].Rob_id << " ";
+        std::cout << "to_execute: " << buffer[i].to_execute << std::endl;
+    }
+    std::cout << "----------------------" << std::endl;
 }

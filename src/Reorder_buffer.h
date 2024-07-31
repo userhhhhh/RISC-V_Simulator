@@ -50,6 +50,7 @@ public:
     void step();
     void add(InstrRob instr);
     int get_tail_next();
+    void display();
 };
 
 #endif //RISC5_REORDER_BUFFER_H

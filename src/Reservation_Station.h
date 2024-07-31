@@ -32,6 +32,7 @@ private:
     LSB* lsb;
 
 public:
+    bool isFull();
     void add(InstrRS &instrRs);
     void init(Rob* rob_in, LSB* lsb_in, ALU* alu_in);
     void flush();
@@ -40,6 +41,8 @@ public:
     void update_data();
     void Send_to_ALU();
     int get_next();
+    bool judge_next(int i);
+    void display();
 };
 
 #endif //RISC5_RESERVATION_STATION_H

@@ -18,6 +18,8 @@ public:
 private:
     bool flag_next;
     int pc_next;
+public:
+    bool ready_next;
 
 private:
     bool Rob_flag;
@@ -48,6 +50,7 @@ public:
     static LSType get_LSType(Instruction &instr);
     static RobType get_RobType(Instruction &instr);
     void flush();
+    void display();
 };
 
 #endif //RISC5_DECODER_H
