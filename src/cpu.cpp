@@ -33,7 +33,7 @@ void CPU::execute() {
     alu.step();
     reg.execute(rob.flag_clear);
 #ifdef DEBUG
-//    reg.display();
+    reg.display();
 #endif
 }
 void CPU::flush() {

@@ -15,8 +15,16 @@ int main() {
     mem.init();
     CPU cpu;
     cpu.init(&mem);
+    int count = 0;
+
     while(!cpu.finish()) {
+        std::cout << "++++++++++++++ " << count << " ++++++++++++++" << std::endl;
+        if(count == 12) {
+            std::cout << "Here" << std::endl;
+        }
         cpu.execute();
         cpu.flush();
+        std::cout << "++++++++++++++++++++++++++++" << std::endl;
+        count++;
     }
 }

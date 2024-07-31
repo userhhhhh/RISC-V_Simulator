@@ -14,7 +14,7 @@ void Instruction::flush(bool decoder_read_next){
 }
 
 int Instruction::get_pc(bool decoder_ready_next, unsigned Rob_pc, unsigned decoder_pc, bool Rob_flag, bool decoder_flag) const {
-    if(decoder_ready_next){
+    if(!decoder_ready_next){
         return -1;
     }
     int pc_index;
@@ -34,14 +34,15 @@ void Instruction::decoder(bool decoder_ready_next, unsigned Rob_pc, unsigned dec
         ready_next = false;
         return;
     }
+    uint32_t instr_get_ = mem->fetch_32(pc_index);
     int instr_get = (int)mem->fetch_32(pc_index);
     instrAddr_next = pc_index;
     pc_next = pc_index + 4;
     ready_next = true;
-    decode(instr_get);
+    decode(instr_get_);
 }
 
-void Instruction::decode(int src) {
+void Instruction::decode(uint32_t src) {
     switch (fragment(6, 0, src)) {
         case 0b0110111:
             instr_next.type = InstructionType::U;
@@ -152,8 +153,8 @@ void Instruction::decode(int src) {
 
 void Instruction::display() {
     std::cout << "-------Instruction--------" << std::endl;
-    std::cout << "pc:" << pc << "    ";
-    std::cout << "instrAddr:" << instrAddr << std::endl;
+    std::cout << "pc:" << std::hex << pc << std::dec << "    ";
+    std::cout << "instrAddr:" << std::hex << instrAddr << std::dec << std::endl;
     std::cout << "opt:" << instr.opt << "    ";
     std::cout << "rs1:" << instr.rs1 << "    ";
     std::cout << "rs2:" << instr.rs2 << "    ";
@@ -161,8 +162,8 @@ void Instruction::display() {
     std::cout << "imm:" << instr.imm << "    ";
     std::cout << "ready:" << ready << std::endl;
 
-    std::cout << "pc_next:" << pc_next << "    ";
-    std::cout << "instrAddr_next:" << instrAddr_next << std::endl;
+    std::cout << "pc_next:" << std::hex << pc_next << std::dec << "    ";
+    std::cout << "instrAddr_next:" << std::hex << instrAddr_next << std::dec << std::endl;
     std::cout << "opt_next:" << instr_next.opt << "    ";
     std::cout << "rs1_next:" << instr_next.rs1 << "    ";
     std::cout << "rs2_next:" << instr_next.rs2 << "    ";

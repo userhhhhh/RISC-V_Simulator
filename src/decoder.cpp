@@ -6,29 +6,29 @@ void Decoder::init(RegisterFile *reg_in, Rob *rob_in, Instruction *_instr_in, LS
     instr_in = _instr_in;
     lsb = lsb_in;
     rs = rs_in;
+    ready_next = true;
 }
 void Decoder::step() {
     execute(*instr_in);
 }
 void Decoder::execute(Instruction &instr) {
+    ready_next = true;
     flag_next = false;
-    if(!instr.ready){
-        return;
-    }
+
     pc_next = -1;
     Rob_flag = false;
     RS_flag = false;
     LSB_flag = false;
 
-    switch (instr.instr.opt) {
+    switch (instr.instr_next.opt) {
         case OptType::LUI:
             if(rob->buffer.isFull()){
                 ready_next = false;
                 break;
             }
             instrRob.opt = OptType::LUI;
-            instrRob.rd = instr.instr.rd;
-            instrRob.imm = instr.instr.imm;
+            instrRob.rd = instr.instr_next.rd;
+            instrRob.imm = instr.instr_next.imm;
             Rob_flag = true;
             break;
         case OptType::AUIPC:
@@ -37,8 +37,8 @@ void Decoder::execute(Instruction &instr) {
                 break;
             }
             instrRob.opt = OptType::AUIPC;
-            instrRob.rd = instr.instr.rd;
-            instrRob.imm = instr.instr.imm;
+            instrRob.rd = instr.instr_next.rd;
+            instrRob.imm = instr.instr_next.imm;
             Rob_flag = true;
             break;
         case OptType::JAL:
@@ -47,11 +47,11 @@ void Decoder::execute(Instruction &instr) {
                 break;
             }
             instrRob.opt = OptType::JAL;
-            instrRob.rd = instr.instr.rd;
-            instrRob.imm = instr.instr.imm;
+            instrRob.rd = instr.instr_next.rd;
+            instrRob.imm = instr.instr_next.imm;
             Rob_flag = true;
             flag_next = true;
-            pc_next = (int) instr.instrAddr + instr.instr.imm;
+            pc_next = (int) instr.instrAddr_next + instr.instr_next.imm;
             break;
         case OptType::JALR:
             // TODO
@@ -60,12 +60,12 @@ void Decoder::execute(Instruction &instr) {
                 break;
             }
             instrRob.opt = OptType::JALR;
-            instrRob.rd = instr.instr.rd;
-            instrRob.rs1 = instr.instr.rs1;
-            instrRob.imm = instr.instr.imm;
+            instrRob.rd = instr.instr_next.rd;
+            instrRob.rs1 = instr.instr_next.rs1;
+            instrRob.imm = instr.instr_next.imm;
             Rob_flag = true;
             flag_next = true;
-            pc_next = (int) ((reg->registers[instrRob.rs1].value + instr.instr.imm) & 0xfffffffe);
+            pc_next = (int) ((reg->registers[instrRob.rs1].value + instr.instr_next.imm) & 0xfffffffe);
             break;
         case OptType::BEQ:
         case OptType::BNE:
@@ -164,11 +164,11 @@ void Decoder::func_branch(Instruction &instr){
         ready_next = false;
         return;
     }
-    instrRob.opt = instr.instr.opt;
+    instrRob.opt = instr.instr_next.opt;
     instrRob.Rob_opt = get_RobType(instr);
-    instrRob.rs1 = instr.instr.rs1;
-    instrRob.rs2 = instr.instr.rs2;
-    instrRob.imm = instr.instr.imm;
+    instrRob.rs1 = instr.instr_next.rs1;
+    instrRob.rs2 = instr.instr_next.rs2;
+    instrRob.imm = instr.instr_next.imm;
     Rob_flag = true;
     instrLsb.opt = get_LSType(instr);
     get_Ri(instr);
@@ -178,23 +178,23 @@ void Decoder::func_branch(Instruction &instr){
     LSB_flag = true;
 }
 void Decoder::get_Ri(Instruction &instr){
-    if(reg->registers[instr.instr.rs1].valid){
+    if(reg->registers[instr.instr_next.rs1].valid){
         instrLsb.flag_Ri = true;
-        instrLsb.Qi = reg->registers[instr.instr.rs1].Rob_index;
+        instrLsb.Qi = reg->registers[instr.instr_next.rs1].Rob_index;
     }
     else{
         instrLsb.flag_Ri = false;
-        instrLsb.Ri = reg->registers[instr.instr.rs1].value;
+        instrLsb.Ri = reg->registers[instr.instr_next.rs1].value;
     }
 }
 void Decoder::get_Rj(Instruction & instr){
-    if(reg->registers[instr.instr.rs2].valid){
+    if(reg->registers[instr.instr_next.rs2].valid){
         instrLsb.flag_Rj = true;
-        instrLsb.Qj = reg->registers[instr.instr.rs2].Rob_index;
+        instrLsb.Qj = reg->registers[instr.instr_next.rs2].Rob_index;
     }
     else{
         instrLsb.flag_Rj = false;
-        instrLsb.Rj = reg->registers[instr.instr.rs2].value;
+        instrLsb.Rj = reg->registers[instr.instr_next.rs2].value;
     }
 }
 void Decoder::func_load(Instruction &instr){
@@ -202,10 +202,10 @@ void Decoder::func_load(Instruction &instr){
         ready_next = false;
         return;
     }
-    instrRob.opt = instr.instr.opt;
-    instrRob.rd = instr.instr.rd;
-    instrRob.rs1 = instr.instr.rs1;
-    instrRob.imm = instr.instr.imm;
+    instrRob.opt = instr.instr_next.opt;
+    instrRob.rd = instr.instr_next.rd;
+    instrRob.rs1 = instr.instr_next.rs1;
+    instrRob.imm = instr.instr_next.imm;
     Rob_flag = true;
     instrLsb.opt = get_LSType(instr);
     get_Ri(instr);
@@ -218,11 +218,11 @@ void Decoder::func_store(Instruction &instr){
         ready_next = false;
         return;
     }
-    instrRob.opt = instr.instr.opt;
+    instrRob.opt = instr.instr_next.opt;
     instrRob.Rob_opt = get_RobType(instr);
-    instrRob.rs1 = instr.instr.rs1;
-    instrRob.rs2 = instr.instr.rs2;
-    instrRob.imm = instr.instr.imm;
+    instrRob.rs1 = instr.instr_next.rs1;
+    instrRob.rs2 = instr.instr_next.rs2;
+    instrRob.imm = instr.instr_next.imm;
     Rob_flag = true;
     instrLsb.opt = get_LSType(instr);
     get_Ri(instr);
@@ -232,7 +232,7 @@ void Decoder::func_store(Instruction &instr){
     LSB_flag = true;
 }
 LSType Decoder::get_LSType(Instruction &instr) {
-    switch (instr.instr.opt) {
+    switch (instr.instr_next.opt) {
         case OptType::LB:
             return LSType::LB;
         case OptType::LH:
@@ -254,12 +254,12 @@ LSType Decoder::get_LSType(Instruction &instr) {
     }
 }
 RobType Decoder::get_RobType(Instruction &instr) {
-    switch (instr.instr.opt) {
+    switch (instr.instr_next.opt) {
         case OptType::LUI:
-        case OptType::AUIPC: return RobType::reg;
-
+        case OptType::AUIPC:
         case OptType::JAL:
-        case OptType::JALR:
+        case OptType::JALR: return RobType::reg;
+
         case OptType::BEQ:
         case OptType::BNE:
         case OptType::BLT:
@@ -271,11 +271,34 @@ RobType Decoder::get_RobType(Instruction &instr) {
         case OptType::LH:
         case OptType::LW:
         case OptType::LBU:
-        case OptType::LHU: return RobType::reg;
+        case OptType::LHU:
+
+        case OptType::ADDI:
+        case OptType::SLTI:
+        case OptType::SLTIU:
+        case OptType::XORI:
+        case OptType::ORI:
+        case OptType::ANDI:
+        case OptType::SLLI:
+        case OptType::SRLI:
+        case OptType::SRAI:
+
+        case OptType::ADD:
+        case OptType::SUB:
+        case OptType::SLL:
+        case OptType::SLT:
+        case OptType::SLTU:
+        case OptType::XOR:
+        case OptType::SRL:
+        case OptType::SRA:
+        case OptType::OR:
+        case OptType::AND: return RobType::reg;
 
         case OptType::SB:
         case OptType::SH:
         case OptType::SW: return RobType::store;
+
+        case OptType::DELETE: return RobType::exit;
 
         default: throw "Error: get_RobType error";
     }
@@ -285,13 +308,13 @@ void Decoder::func_cal_imm(Instruction &instr){
         ready_next = false;
         return;
     }
-    instrRob.opt = instr.instr.opt;
+    instrRob.opt = instr.instr_next.opt;
     instrRob.Rob_opt = get_RobType(instr);
-    instrRob.rs1 = instr.instr.rs1;
-    instrRob.rs2 = instr.instr.rs2;
-    instrRob.imm = instr.instr.imm;
+    instrRob.rs1 = instr.instr_next.rs1;
+    instrRob.rs2 = instr.instr_next.rs2;
+    instrRob.imm = instr.instr_next.imm;
     Rob_flag = true;
-    instrRs.opt = instr.instr.opt;
+    instrRs.opt = instr.instr_next.opt;
     get_Ri(instr);
     get_Rj(instr);
     RS_flag = true;
@@ -301,13 +324,13 @@ void Decoder::func_cal(Instruction &instr){
         ready_next = false;
         return;
     }
-    instrRob.opt = instr.instr.opt;
+    instrRob.opt = instr.instr_next.opt;
     instrRob.Rob_opt = get_RobType(instr);
-    instrRob.rs1 = instr.instr.rs1;
-    instrRob.rs2 = instr.instr.rs2;
-    instrRob.rd = instr.instr.rd;
+    instrRob.rs1 = instr.instr_next.rs1;
+    instrRob.rs2 = instr.instr_next.rs2;
+    instrRob.rd = instr.instr_next.rd;
     Rob_flag = true;
-    instrRs.opt = instr.instr.opt;
+    instrRs.opt = instr.instr_next.opt;
     get_Ri(instr);
     get_Rj(instr);
     RS_flag = true;
@@ -323,6 +346,7 @@ void Decoder::flush() {
 }
 void Decoder::display() {
     std::cout << "-------Decoder--------" << std::endl;
+    std::cout << "Ready_next:" << ready_next << std::endl;
     std::cout << "Rob_flag: " << Rob_flag << "    ";
     std::cout << "RS_flag: " << RS_flag << "    ";
     std::cout << "LSB_flag: " << LSB_flag << std::endl;
