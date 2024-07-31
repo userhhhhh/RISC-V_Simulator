@@ -42,9 +42,11 @@ void LSB::flush(){
     buffer = buffer_next;
 }
 void LSB::step(){
+
+    //TODO
     update_data();
     int index = (buffer.head + 1) % LSB_SIZE;
-    auto entry = buffer[index];
+    auto entry= buffer[index];
     buffer_next.pop();
 
     int get_Ri, get_Rj;

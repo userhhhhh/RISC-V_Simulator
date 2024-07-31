@@ -23,6 +23,8 @@ int Instruction::get_pc(unsigned Rob_pc, unsigned decoder_pc, bool Rob_flag, boo
 void Instruction::decoder(unsigned Rob_pc, unsigned decoder_pc, bool Rob_flag, bool decoder_flag) {
     int pc_index = get_pc(Rob_pc, decoder_pc, Rob_flag, decoder_flag);
     int instr_get = (int)mem->fetch_32(pc_index);
+    instrAddr_next = pc_index;
+    pc_next = pc_index + 4;
     decode(instr_get);
 }
 

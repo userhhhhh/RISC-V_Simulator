@@ -38,7 +38,7 @@ void Decoder::execute(Instruction &instr) {
             instrRob.imm = instr.instr.imm;
             Rob_flag = true;
             flag_next = true;
-            pc_next = (int) instr.pc + instr.instr.imm;
+            pc_next = (int) instr.instrAddr + instr.instr.imm;
             break;
         case OptType::JALR:
             instrRob.opt = OptType::JALR;
@@ -47,7 +47,7 @@ void Decoder::execute(Instruction &instr) {
             instrRob.imm = instr.instr.imm;
             Rob_flag = true;
             flag_next = true;
-            pc_next = (int) ((instr.pc + instr.instr.imm) & 0xfffffffe);
+            pc_next = (int) ((reg->registers[instrRob.rs1].value + instr.instr.imm) & 0xfffffffe);
             break;
         case OptType::BEQ:
         case OptType::BNE:
@@ -88,6 +88,45 @@ void Decoder::execute(Instruction &instr) {
         case OptType::AND: func_cal(instr); break;
 
         case OptType::DELETE: func_exit(instr);break;
+    }
+
+    if(rob->buffer[(int) instrRs.Qi].ready){
+        instrRs.Ri = rob->buffer[(int) instrRs.Qi].output;
+        instrRs.flag_Ri = false;
+    }
+    if(rob->buffer[(int)instrRs.Qj].ready){
+        instrRs.Rj = rob->buffer[(int) instrRs.Qj].output;
+        instrRs.flag_Rj = false;
+    }
+    if(rob->buffer[(int)instrLsb.Qi].ready){
+        instrLsb.Ri = rob->buffer[(int) instrLsb.Qi].output;
+        instrLsb.flag_Ri = false;
+    }
+    if(rob->buffer[(int)instrLsb.Qj].ready){
+        instrLsb.Rj = rob->buffer[(int) instrLsb.Qj].output;
+        instrLsb.flag_Rj = false;
+    }
+    RS_Data rsData = rs->get_data();
+    if(rsData.ready){
+        if(instrRs.Qi == rsData.Rob_id){
+            instrRs.Ri = rsData.value;
+            instrRs.flag_Ri = false;
+        }
+        if(instrRs.Qj == rsData.Rob_id){
+            instrRs.Rj = rsData.value;
+            instrRs.flag_Rj = false;
+        }
+    }
+    LSB_Data lsbData = lsb->get_data();
+    if(lsbData.ready){
+        if(instrLsb.Qi == lsbData.Rob_id){
+            instrLsb.Ri = lsbData.value;
+            instrLsb.flag_Ri = false;
+        }
+        if(instrLsb.Qj == lsbData.Rob_id){
+            instrLsb.Rj = lsbData.value;
+            instrLsb.flag_Rj = false;
+        }
     }
 
     if(Rob_flag){
