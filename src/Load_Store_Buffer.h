@@ -35,8 +35,10 @@ public:
 
 class LSB {
 public:
+    LSB_Data result;
     queue<LSB_Entry, LSB_SIZE> buffer;
 private:
+    LSB_Data result_next;
     queue<LSB_Entry, LSB_SIZE> buffer_next;
 
 private:
@@ -54,7 +56,6 @@ public:
     LSB_Data get_data();
     void update_data();
     void display();
-    int get_index();
     bool judge_ready(int i);
     bool judge_stop(int i);
 

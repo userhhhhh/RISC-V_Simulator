@@ -22,8 +22,8 @@ int main() {
         if(count == 8) {
             std::cout << "Here" << std::endl;
         }
-        cpu.execute();
         cpu.flush();
+        cpu.execute();
         std::cout << "++++++++++++++++++++++++++++" << std::endl;
         count++;
     }

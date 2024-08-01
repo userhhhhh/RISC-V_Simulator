@@ -24,10 +24,10 @@ public:
 
 class Reservation_Station {
 public:
-    int rs_num = 0;
+//    int rs_num = 0;
     RS_Entry buffer[RS_SIZE];
 private:
-    int rs_next_num = 0;
+//    int rs_next_num = 0;
     RS_Entry buffer_next[RS_SIZE];
 private:
     ALU* alu;
@@ -42,7 +42,7 @@ public:
     void step();
     RS_Data get_data();
     void update_data();
-    void Send_to_ALU();
+//    void Send_to_ALU();
     int get_next();
     bool judge_next(int i);
     void display();

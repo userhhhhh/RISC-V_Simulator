@@ -12,6 +12,10 @@ void Decoder::step() {
     execute(*instr_in);
 }
 void Decoder::execute(Instruction &instr) {
+//    if(rob->buffer.isFull() || rs->isFull() || lsb->buffer.isFull()){
+//        ready_next = false;
+//        return;
+//    }
     if(instr.instr_next.opt == OptType::SW){
         std::cout << "hhhh" << std::endl;
     }

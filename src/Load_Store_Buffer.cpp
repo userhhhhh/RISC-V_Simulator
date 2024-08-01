@@ -47,74 +47,75 @@ void LSB::add(InstrLSB &instrLsb) {
 
 void LSB::flush() {
     buffer = buffer_next;
+    result = result_next;
 }
 
 void LSB::step() {
 
-    int index = get_index();
-    if (index == -1) return;
+    update_data();
+
+    int index = (buffer.head + 1) % LSB_SIZE;
     auto entry = buffer[index];
+    if(entry.opt >= LSType::LB && entry.opt <= LSType::LHU){
+        if(!entry.flag_Ri && !entry.flag_Rj){
+            buffer[index].ready = true;
+            buffer_next[index].ready = true;
+        }
+    }
+    if(entry.opt >= LSType::SB && entry.opt <= LSType::SW) {
+        if ((rob->buffer.head + 1) % ROB_SIZE != buffer.front().Rob_id) {
+            return;
+        }
+    }
     buffer_next.pop();
 
-    int get_Ri, get_Rj;
-    if (!entry.flag_Ri) get_Ri = entry.Ri;
-    else get_Ri = rs->buffer[entry.Qi].result;
-    if (!entry.flag_Rj) get_Rj = entry.Rj;
-    else get_Rj = rs->buffer[entry.Qj].result;
+//    int get_Ri, get_Rj;
+//    if (!entry.flag_Ri) get_Ri = entry.Ri;
+//    else get_Ri = rs->buffer[entry.Qi].result;
+//    if (!entry.flag_Rj) get_Rj = entry.Rj;
+//    else get_Rj = rs->buffer[entry.Qj].result;
 
     switch (entry.opt) {
         case LSType::LB:
-            entry.result = mem->load_memory(get_Ri + entry.offset, 1, true);
-            entry.ready = true;
+            result_next.value = mem->load_memory(entry.Ri + entry.offset, 1, true);
+            result_next.ready = true;
             break;
         case LSType::LH:
-            entry.result = mem->load_memory(get_Ri + entry.offset, 2, true);
-            entry.ready = true;
+            result_next.value = mem->load_memory(entry.Ri + entry.offset, 2, true);
+            result_next.ready = true;
             break;
         case LSType::LW:
-            entry.result = mem->load_memory(get_Ri + entry.offset, 4, true);
-            entry.ready = true;
+            result_next.value = mem->load_memory(entry.Ri + entry.offset, 4, true);
+            result_next.ready = true;
             break;
         case LSType::LBU:
-            entry.result = mem->load_memory(get_Ri + entry.offset, 1, false);
-            entry.ready = true;
+            result_next.value = mem->load_memory(entry.Ri + entry.offset, 1, false);
+            result_next.ready = true;
             break;
         case LSType::LHU:
-            entry.result = mem->load_memory(get_Ri + entry.offset, 2, false);
-            entry.ready = true;
+            result_next.value = mem->load_memory(entry.Ri + entry.offset, 2, false);
+            result_next.ready = true;
             break;
+
         case LSType::SB:
-            mem->store_memory(get_Ri + entry.offset, get_Rj, 1);
+            mem->store_memory(entry.Ri + entry.offset, entry.Rj, 1);
             entry.ready = true;
             break;
         case LSType::SH:
-            mem->store_memory(get_Ri + entry.offset, get_Rj, 2);
+            mem->store_memory(entry.Ri + entry.offset, entry.Rj, 2);
             entry.ready = true;
             break;
         case LSType::SW:
-            mem->store_memory(get_Ri + entry.offset, get_Rj, 4);
+            mem->store_memory(entry.Ri + entry.offset, entry.Rj, 4);
             entry.ready = true;
             break;
         default:
             break;
     }
 
-    if (entry.opt >= LSType::LB && entry.opt <= LSType::LHU) {
-        // TODO
-    }
-
-    update_data();
-}
-
-int LSB::get_index() {
-    if (buffer.isEmpty()) return -1;
-    int start = (buffer.head + 1) % LSB_SIZE;
-    for (int i = start; i != (buffer.tail + 1) % LSB_SIZE; i = (i + 1) % LSB_SIZE) {
-        if (buffer[i].to_execute) return i;
-        if (judge_ready(i)) return i;
-        if (judge_stop(i)) return -1;
-    }
-    return -1;
+//    if (entry.opt >= LSType::LB && entry.opt <= LSType::LHU) {
+//        // TODO: ?
+//    }
 }
 
 bool LSB::judge_ready(int i) {
@@ -157,20 +158,18 @@ void LSB::update_data() {
             }
         }
     }
-    for(int i = 0; i < 32; i++){
-        //TODO
-    }
-    if ((rob->buffer.head + 1) % ROB_SIZE == buffer.front().Rob_id && !buffer.front().to_execute) {
-        buffer[buffer.head + 1].to_execute = true;
-    }
+//    if ((rob->buffer.head + 1) % ROB_SIZE == buffer.front().Rob_id && !buffer.front().to_execute) {
+//        buffer[buffer.head + 1].to_execute = true;
+//    }
 }
 
 LSB_Data LSB::get_data() {
-    LSB_Data data;
-    data.ready = buffer.front().ready;
-    data.Rob_id = buffer.front().Rob_id;
-    data.value = buffer.front().result;
-    return data;
+//    LSB_Data data;
+//    data.ready = buffer.front().ready;
+//    data.Rob_id = buffer.front().Rob_id;
+//    data.value = result.value;
+//    return data
+    return result;
 }
 
 void LSB::display() {

@@ -33,7 +33,7 @@ void Reservation_Station::add(InstrRS &instrRs) {
     buffer_next[index].flag_Ri = instrRs.flag_Ri;
     buffer_next[index].flag_Rj = instrRs.flag_Rj;
     buffer_next[index].result = instrRs.result;
-    rs_num++;
+//    rs_num++;
 }
 void Reservation_Station::flush(){
     for(int i = 0; i < RS_SIZE; i++){
@@ -78,16 +78,17 @@ void Reservation_Station::step(){
     buffer_next[index].result_ready = true;
     buffer_next[index].busy = false;
 }
-void Reservation_Station::Send_to_ALU() {
-    for(int i = 0; i < RS_SIZE; i++){
-        if(buffer[i].opt == OptType::DELETE) continue;
-        if(alu->ready && !buffer[i].flag_Ri && !buffer[i].flag_Rj){
-            buffer_next[i].result = alu->calculate(buffer[i].opt, buffer[i].Ri, buffer[i].Rj, buffer[i].Rob_id);
-//            Send_to_RoB_or_LSB(buffer[i].opt, buffer[i].Rob_id, buffer_next[i].result);
-            buffer_next[i].opt = OptType::DELETE;
-        }
-    }
-}
+
+//void Reservation_Station::Send_to_ALU() {
+//    for(int i = 0; i < RS_SIZE; i++){
+//        if(buffer[i].opt == OptType::DELETE) continue;
+//        if(alu->ready && !buffer[i].flag_Ri && !buffer[i].flag_Rj){
+//            buffer_next[i].result = alu->calculate(buffer[i].opt, buffer[i].Ri, buffer[i].Rj, buffer[i].Rob_id);
+////            Send_to_RoB_or_LSB(buffer[i].opt, buffer[i].Rob_id, buffer_next[i].result);
+//            buffer_next[i].opt = OptType::DELETE;
+//        }
+//    }
+//}
 
 RS_Data Reservation_Station::get_data(){
     RS_Data data;
