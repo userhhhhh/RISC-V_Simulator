@@ -30,7 +30,9 @@ void LSB::add(InstrLSB &instrLsb) {
         index = i;
     }
     if (!flag) return;
-    buffer[index].ready = true;
+    if(!buffer[index].flag_Ri && !buffer[index].flag_Rj){
+        buffer[index].ready = true;
+    }
     buffer[index].opt = instrLsb.opt;
     buffer[index].Ri = instrLsb.Ri;
     buffer[index].Rj = instrLsb.Rj;
@@ -49,8 +51,6 @@ void LSB::flush() {
 
 void LSB::step() {
 
-    //TODO
-    update_data();
     int index = get_index();
     if (index == -1) return;
     auto entry = buffer[index];
@@ -65,35 +65,45 @@ void LSB::step() {
     switch (entry.opt) {
         case LSType::LB:
             entry.result = mem->load_memory(get_Ri + entry.offset, 1, true);
+            entry.ready = true;
             break;
         case LSType::LH:
             entry.result = mem->load_memory(get_Ri + entry.offset, 2, true);
+            entry.ready = true;
             break;
         case LSType::LW:
             entry.result = mem->load_memory(get_Ri + entry.offset, 4, true);
+            entry.ready = true;
             break;
         case LSType::LBU:
             entry.result = mem->load_memory(get_Ri + entry.offset, 1, false);
+            entry.ready = true;
             break;
         case LSType::LHU:
             entry.result = mem->load_memory(get_Ri + entry.offset, 2, false);
+            entry.ready = true;
             break;
         case LSType::SB:
             mem->store_memory(get_Ri + entry.offset, get_Rj, 1);
+            entry.ready = true;
             break;
         case LSType::SH:
             mem->store_memory(get_Ri + entry.offset, get_Rj, 2);
+            entry.ready = true;
             break;
         case LSType::SW:
             mem->store_memory(get_Ri + entry.offset, get_Rj, 4);
+            entry.ready = true;
             break;
         default:
             break;
     }
 
     if (entry.opt >= LSType::LB && entry.opt <= LSType::LHU) {
-
+        // TODO
     }
+
+    update_data();
 }
 
 int LSB::get_index() {
@@ -146,6 +156,9 @@ void LSB::update_data() {
                 buffer_next[i].flag_Rj = false;
             }
         }
+    }
+    for(int i = 0; i < 32; i++){
+        //TODO
     }
     if ((rob->buffer.head + 1) % ROB_SIZE == buffer.front().Rob_id && !buffer.front().to_execute) {
         buffer[buffer.head + 1].to_execute = true;

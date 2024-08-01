@@ -8,7 +8,7 @@ void CPU::init(Memory *mem_in) {
     decoder.init(&reg, &rob, &instr, &lsb, &rs);
     rob.init(&rs, &lsb, &reg);
     rs.init(&rob, &lsb, &alu);
-    lsb.init(&rob, &rs, &reg);
+    lsb.init(&rob, &rs, &reg, mem);
     alu.init();
     reg.init(&rob);
 }

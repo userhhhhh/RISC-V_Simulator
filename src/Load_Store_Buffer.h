@@ -57,7 +57,7 @@ public:
     int get_index();
     bool judge_ready(int i);
     bool judge_stop(int i);
-    void Send_to_Rob(int rob_id, uint32_t value);
+
     void clear();
     void print();
     LSB& operator= (const LSB& lsb);

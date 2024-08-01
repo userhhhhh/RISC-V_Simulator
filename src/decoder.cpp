@@ -124,9 +124,20 @@ void Decoder::execute(Instruction &instr) {
         case OptType::DELETE: func_exit(instr);break;
     }
 
+    RS_Data rsData = rs->get_data();
+    LSB_Data lsbData = lsb->get_data();
+
     if(instrRs.flag_Ri){
         if(rob->buffer[(int) instrRs.Qi].ready){
             instrRs.Ri = rob->buffer[(int) instrRs.Qi].value;
+            instrRs.flag_Ri = false;
+        }
+        if(rsData.ready && instrRs.Qi == rsData.Rob_id){
+            instrRs.Ri = rsData.value;
+            instrRs.flag_Ri = false;
+        }
+        if(lsbData.ready && instrRs.Qi == lsbData.Rob_id){
+            instrRs.Ri = lsbData.value;
             instrRs.flag_Ri = false;
         }
     }
@@ -135,10 +146,26 @@ void Decoder::execute(Instruction &instr) {
             instrRs.Rj = rob->buffer[(int) instrRs.Qj].value;
             instrRs.flag_Rj = false;
         }
+        if(rsData.ready && instrRs.Qj == rsData.Rob_id){
+            instrRs.Rj = rsData.value;
+            instrRs.flag_Rj = false;
+        }
+        if(lsbData.ready && instrRs.Qj == lsbData.Rob_id){
+            instrRs.Rj = lsbData.value;
+            instrRs.flag_Rj = false;
+        }
     }
     if(instrLsb.flag_Ri){
         if(rob->buffer[(int) instrLsb.Qi].ready){
             instrLsb.Ri = rob->buffer[(int) instrLsb.Qi].value;
+            instrLsb.flag_Ri = false;
+        }
+        if(rsData.ready && instrLsb.Qi == rsData.Rob_id){
+            instrLsb.Ri = rsData.value;
+            instrLsb.flag_Ri = false;
+        }
+        if(lsbData.ready && instrLsb.Qi == lsbData.Rob_id){
+            instrLsb.Ri = lsbData.value;
             instrLsb.flag_Ri = false;
         }
     }
@@ -147,26 +174,11 @@ void Decoder::execute(Instruction &instr) {
             instrLsb.Rj = rob->buffer[(int) instrLsb.Qj].value;
             instrLsb.flag_Rj = false;
         }
-    }
-
-    RS_Data rsData = rs->get_data();
-    if(rsData.ready){
-        if(instrRs.flag_Ri && instrRs.Qi == rsData.Rob_id){
-            instrRs.Ri = rsData.value;
-            instrRs.flag_Ri = false;
+        if(rsData.ready && instrLsb.Qj == rsData.Rob_id){
+            instrLsb.Rj = rsData.value;
+            instrLsb.flag_Rj = false;
         }
-        if(instrRs.flag_Rj && instrRs.Qj == rsData.Rob_id){
-            instrRs.Rj = rsData.value;
-            instrRs.flag_Rj = false;
-        }
-    }
-    LSB_Data lsbData = lsb->get_data();
-    if(lsbData.ready){
-        if(instrLsb.flag_Ri && instrLsb.Qi == lsbData.Rob_id){
-            instrLsb.Ri = lsbData.value;
-            instrLsb.flag_Ri = false;
-        }
-        if(instrLsb.flag_Rj && instrLsb.Qj == lsbData.Rob_id){
+        if(lsbData.ready && instrLsb.Qj == lsbData.Rob_id){
             instrLsb.Rj = lsbData.value;
             instrLsb.flag_Rj = false;
         }
@@ -204,7 +216,7 @@ void Decoder::func_branch(Instruction &instr){
     LSB_flag = true;
 }
 void Decoder::get_Ri(Instruction &instr){
-    if(reg->registers[instr.instr_next.rs1].valid){
+    if(reg->registers[instr.instr_next.rs1].Is_dependent){
         instrLsb.flag_Ri = true;
         instrLsb.Qi = reg->registers[instr.instr_next.rs1].Rob_index;
     }
@@ -214,17 +226,17 @@ void Decoder::get_Ri(Instruction &instr){
     }
 }
 void Decoder::get_Ri_Rs(Instruction &instr){
-    if(reg->registers[instr.instr_next.rs1].valid) {
-        instrRs.flag_Ri = false;
-        instrRs.Ri = reg->registers[instr.instr_next.rs1].value;
-    }
-    else {
+    if(reg->registers[instr.instr_next.rs1].Is_dependent) {
         instrRs.flag_Ri = true;
         instrRs.Qi = reg->registers[instr.instr_next.rs1].Rob_index;
     }
+    else {
+        instrRs.flag_Ri = false;
+        instrRs.Ri = reg->registers[instr.instr_next.rs1].value;
+    }
 }
 void Decoder::get_Rj(Instruction & instr){
-    if(reg->registers[instr.instr_next.rs2].valid){
+    if(reg->registers[instr.instr_next.rs2].Is_dependent){
         instrLsb.flag_Rj = true;
         instrLsb.Qj = reg->registers[instr.instr_next.rs2].Rob_index;
     }
@@ -234,7 +246,7 @@ void Decoder::get_Rj(Instruction & instr){
     }
 }
 void Decoder::get_Rj_Rs(Instruction & instr){
-    if(reg->registers[instr.instr_next.rs2].valid){
+    if(reg->registers[instr.instr_next.rs2].Is_dependent){
         instrRs.flag_Rj = true;
         instrRs.Qj = reg->registers[instr.instr_next.rs2].Rob_index;
     }

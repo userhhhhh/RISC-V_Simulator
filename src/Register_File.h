@@ -9,7 +9,7 @@ class Rob;
 class Register_Entry{
 public:
     int value = 0;
-    bool valid = false;
+    bool Is_dependent = false; //无依赖关系
     int Rob_index = -1;
 };
 
