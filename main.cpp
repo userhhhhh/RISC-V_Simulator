@@ -19,7 +19,7 @@ int main() {
 
     while(!cpu.finish()) {
         std::cout << "++++++++++++++ " << count << " ++++++++++++++" << std::endl;
-        if(count == 3) {
+        if(count == 8) {
             std::cout << "Here" << std::endl;
         }
         cpu.execute();

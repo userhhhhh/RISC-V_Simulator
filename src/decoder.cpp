@@ -12,6 +12,9 @@ void Decoder::step() {
     execute(*instr_in);
 }
 void Decoder::execute(Instruction &instr) {
+    if(instr.instr_next.opt == OptType::SW){
+        std::cout << "hhhh" << std::endl;
+    }
     ready_next = true;
     flag_next = false;
 
@@ -265,13 +268,16 @@ void Decoder::func_store(Instruction &instr){
     instrRob.opt = instr.instr_next.opt;
     instrRob.Rob_opt = get_RobType(instr);
     instrRob.rd = instr.instr_next.rd;
+    instrRob.pc_addr = instr.instrAddr_next;
     instrRob.ready = false;
     instrRob.value = 0;
     Rob_flag = true;
+
     instrLsb.opt = get_LSType(instr);
     get_Ri(instr);
     get_Rj(instr);
     instrLsb.result = 0;
+    instrLsb.offset = instr.instr_next.imm;
     instrLsb.Rob_id = rob->get_tail_next();
     LSB_flag = true;
 }

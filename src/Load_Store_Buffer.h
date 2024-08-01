@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "Reservation_Station.h"
+#include "memory.h"
 
 #include "../util/utils.h"
 #include "../util/config.h"
@@ -20,6 +21,7 @@ public:
     LSType opt;
     uint32_t Ri, Rj, Qi, Qj;
     bool flag_Ri, flag_Rj;
+    int offset;
     int result;
 
     int Rob_id = -1;
@@ -41,10 +43,11 @@ private:
     Rob *rob;
     Reservation_Station *rs;
     RegisterFile *reg_file;
+    Memory *mem;
 
 public:
     void add(InstrLSB &instrLsb);
-    void init(Rob *rob_in, Reservation_Station *rs_in, RegisterFile *reg_file_in);
+    void init(Rob *rob_in, Reservation_Station *rs_in, RegisterFile *reg_file_in, Memory *mem_in);
     void flush();
     void step();
     void push(LSB_Entry x);

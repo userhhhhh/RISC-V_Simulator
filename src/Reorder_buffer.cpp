@@ -30,7 +30,7 @@ void Rob::step(){
         buffer_next[rsData.Rob_id].ready = true;
     }
     LSB_Data lsbData = lsb->get_data();
-    if(lsbData.ready) {
+    if(lsbData.ready){
         buffer_next[lsbData.Rob_id].value = lsbData.value;
         buffer_next[lsbData.Rob_id].ready = true;
     }
@@ -65,7 +65,7 @@ int Rob::get_tail_next(){
     return (buffer.tail + 1) % ROB_SIZE;
 }
 void Rob::display() {
-    std::cout << "-------ROB--------" << std::endl;
+    std::cout << "--------ROB---------" << std::endl;
     std::cout << "PC:" << PC << std::endl;
     for(auto it = buffer.begin(); it != buffer.end(); ++it){
         std::cout << "id:" << it->id << " ready:" << it->ready << " busy:" << it->busy << " type:" << (int)it->type << " value:" << it->value << " rd:" << it->rd << std::endl;

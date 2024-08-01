@@ -25,3 +25,18 @@ uint32_t Memory::fetch_32(int pos) {
     }
     return ram[pos] | (ram[pos + 1] << 8) | (ram[pos + 2] << 16) | (ram[pos + 3] << 24);
 }
+void Memory::store_memory(int addr, int source, int byte_number) {
+    for (int i = 0; i < byte_number; ++i) {
+        ram[addr + i] = source & 0b11111111;
+        source = source >> 8;
+    }
+}
+int Memory::load_memory(int addr, int byte_number, bool sign_extended) {
+    int out = 0;
+    for (int i = byte_number - 1; i >= 0; --i) {
+        out = out << 8;
+        out = out | int(ram[addr + i]);
+    }
+    if (sign_extended) return num_extend(out, byte_number << 3);
+    else return out;
+}

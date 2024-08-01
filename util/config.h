@@ -60,6 +60,7 @@ public:
     LSType opt;
     uint32_t Ri, Rj, Qi, Qj;
     bool flag_Ri, flag_Rj;
+    int offset;
     int result;
     int Rob_id;
 };

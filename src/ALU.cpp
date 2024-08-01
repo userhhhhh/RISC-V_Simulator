@@ -5,6 +5,7 @@ void ALU::flush() {
     rs1 = rs1_next;
     rs2 = rs2_next;
     Rob_id = Rob_id_next;
+    ready = ready_next;
 }
 
 void ALU::step() {}
