@@ -17,7 +17,10 @@ bool queue<type, size>::isEmpty() {
 
 template<typename type, int size>
 bool queue<type, size>::isFull() {
-    return (tail + 1) % size == head;
+    if((head - tail + size) % size == 1) {
+        return true;
+    }
+    return false;
 }
 
 template<typename type, int size>

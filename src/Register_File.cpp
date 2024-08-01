@@ -50,11 +50,13 @@ void RegisterFile::update_independence(int reg_index, int Rob_index) {
 }
 void RegisterFile::display() {
     std::cout << "-------Register File--------" << std::endl;
+    std::cout << std::hex;
     for (int i = 0; i < 16; i++) {
         std::cout << "Register " << i << ": " << registers[i].value << std::endl;
     }
     for (int i = 16; i < 32; i++) {
         std::cout << "Register " << i << ": " << registers[i].value << std::endl;
     }
+    std::cout << std::dec;
     std::cout << "---------------------------" << std::endl;
 }

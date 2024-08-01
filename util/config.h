@@ -7,7 +7,7 @@
 const int MEMORY_SIZE = 1 << 20;
 const int RS_SIZE = 16;
 const int LSB_SIZE = 16;
-const int ROB_SIZE = 1;
+const int ROB_SIZE = 2;
 
 enum class RobType {
     reg, store, branch, exit
@@ -42,13 +42,15 @@ class InstrRob{
 public:
     OptType opt;
     RobType Rob_opt;
-    uint32_t rd, rs1, rs2, imm;
+    uint32_t rd;
+    int value;
     uint32_t pc_addr;
+    bool ready;
 };
 class InstrRS{
 public:
     OptType opt;
-    uint32_t Ri, Rj, Qi, Qj;
+    int Ri, Rj, Qi, Qj;
     bool flag_Ri, flag_Rj;
     int result;
     int Rob_id;

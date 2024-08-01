@@ -47,6 +47,8 @@ public:
     void func_exit(Instruction &instr);
     void get_Ri(Instruction &instr);
     void get_Rj(Instruction &instr);
+    void get_Ri_Rs(Instruction &instr);
+    void get_Rj_Rs(Instruction &instr);
     static LSType get_LSType(Instruction &instr);
     static RobType get_RobType(Instruction &instr);
     void flush();

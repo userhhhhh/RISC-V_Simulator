@@ -16,20 +16,23 @@ void Reservation_Station::add(InstrRS &instrRs) {
     bool flag = false;
     for(int i = 0; i < RS_SIZE; ++i){
         if(buffer[i].busy) continue;
-        flag = true;
-        index = i;
+        else{
+            flag = true;
+            index = i;
+            break;
+        }
     }
     if(!flag) return;
-    buffer[index].busy = true;
-    buffer[index].opt = instrRs.opt;
-    buffer[index].Ri = instrRs.Ri;
-    buffer[index].Rj = instrRs.Rj;
-    buffer[index].Qi = instrRs.Qi;
-    buffer[index].Qj = instrRs.Qj;
-    buffer[index].Rob_id = instrRs.Rob_id;
-    buffer[index].flag_Ri = instrRs.flag_Ri;
-    buffer[index].flag_Rj = instrRs.flag_Rj;
-    buffer[index].result = instrRs.result;
+    buffer_next[index].busy = true;
+    buffer_next[index].opt = instrRs.opt;
+    buffer_next[index].Ri = instrRs.Ri;
+    buffer_next[index].Rj = instrRs.Rj;
+    buffer_next[index].Qi = instrRs.Qi;
+    buffer_next[index].Qj = instrRs.Qj;
+    buffer_next[index].Rob_id = instrRs.Rob_id;
+    buffer_next[index].flag_Ri = instrRs.flag_Ri;
+    buffer_next[index].flag_Rj = instrRs.flag_Rj;
+    buffer_next[index].result = instrRs.result;
     rs_num++;
 }
 void Reservation_Station::flush(){
@@ -64,13 +67,16 @@ void Reservation_Station::step(){
     if(!entry.flag_Ri) get_Ri = entry.Ri;
     else if(alu->ready && entry.Qi == alu->Rob_id) get_Ri = alu->get_Data();
     else if(lsbData.ready && entry.Qi == lsbData.Rob_id) get_Ri = lsbData.value;
-    else {}
+    else {get_Ri = 0;}
     if(!entry.flag_Rj) get_Rj = entry.Rj;
     else if(alu->ready && entry.Qj == alu->Rob_id) get_Rj = alu->get_Data();
     else if(lsbData.ready && entry.Qj == lsbData.Rob_id) get_Rj = lsbData.value;
-    else {}
+    else {get_Rj = 0;}
 
-    Send_to_ALU();
+    alu->add(entry.opt, get_Ri, get_Rj, entry.Rob_id);
+    buffer_next[index].result = alu->calculate(entry.opt, get_Ri, get_Rj, entry.Rob_id);
+    buffer_next[index].result_ready = true;
+    buffer_next[index].busy = false;
 }
 void Reservation_Station::Send_to_ALU() {
     for(int i = 0; i < RS_SIZE; i++){
@@ -82,13 +88,6 @@ void Reservation_Station::Send_to_ALU() {
         }
     }
 }
-//void Reservation_Station::Send_to_RoB_or_LSB(OptType opt, uint32_t Rob_id, int result){
-//    if(opt == OptType::LW || opt == OptType::LH || opt == OptType::LHU || opt == OptType::LB || opt == OptType::LBU){
-//        lsb->update_data(opt, result, -1, Rob_id);
-//    }else{
-//        rob->set_ready(Rob_id, result);
-//    }
-//}
 
 RS_Data Reservation_Station::get_data(){
     RS_Data data;

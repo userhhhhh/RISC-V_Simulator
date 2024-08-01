@@ -17,12 +17,11 @@ public:
     bool ready;
     bool busy;
 
+    OptType opt;
     RobType type;
-    uint32_t rs1, rs2;
-    uint32_t imm;
+    int value;
     uint32_t rd;
 
-    int output; // 从RS中读取的值
 public:
     Rob_Entry() = default;
     Rob_Entry(const InstrRob &instr, bool busy_in);

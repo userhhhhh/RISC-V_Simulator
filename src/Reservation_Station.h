@@ -12,11 +12,14 @@ class LSB;
 class RS_Entry {
 public:
     bool busy;
+
     OptType opt;
-    uint32_t Ri, Rj, Qi, Qj;
+    int Ri, Rj, Qi, Qj;
     uint32_t Rob_id;
     bool flag_Ri, flag_Rj;
+
     int result;
+    bool result_ready;
 };
 
 class Reservation_Station {
