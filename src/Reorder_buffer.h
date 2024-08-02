@@ -17,12 +17,11 @@ public:
     bool ready;
     bool busy;
 
+    OptType opt;
     RobType type;
-    uint32_t rs1, rs2;
-    uint32_t imm;
+    int value;
     uint32_t rd;
 
-    int output; // 从RS中读取的值
 public:
     Rob_Entry() = default;
     Rob_Entry(const InstrRob &instr, bool busy_in);
@@ -31,11 +30,11 @@ public:
 class Rob {
 public:
     queue<Rob_Entry, ROB_SIZE> buffer;
-    int NewPC;
+    int PC;
     bool flag_clear;
 private:
     queue<Rob_Entry, ROB_SIZE> buffer_next;
-    int NewPC_next;
+    int PC_next;
     bool flag_clear_next;
 
 private:
@@ -50,6 +49,7 @@ public:
     void step();
     void add(InstrRob instr);
     int get_tail_next();
+    void display();
 };
 
 #endif //RISC5_REORDER_BUFFER_H

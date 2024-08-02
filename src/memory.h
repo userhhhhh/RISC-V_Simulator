@@ -13,6 +13,8 @@ public:
     ~Memory() = default;
     void init();
     uint32_t fetch_32(int pos);
+    void store_memory(int addr, int source, int byte_number);
+    int load_memory(int addr, int byte_number, bool sign_extended);
 };
 
 #endif //RISC5_MEMORY_H

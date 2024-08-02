@@ -8,9 +8,9 @@ class Rob;
 
 class Register_Entry{
 public:
-    int value;
-    bool valid;
-    int Rob_index;
+    int value = 0;
+    bool Is_dependent = false; //无依赖关系
+    int Rob_index = -1;
 };
 
 class RegisterFile {
@@ -29,6 +29,7 @@ public:
     void print();
     RegisterFile& operator= (const RegisterFile& rf);
     void update_independence(int reg_index, int Rob_index);
+    void display();
 };
 
 #endif //RISC5_REGISTER_FILE_H

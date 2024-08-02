@@ -20,6 +20,7 @@ public:
     void flush();
     void step();
     int get_Data();
+    void add(OptType opt, int rs1, int rs2, uint32_t Rob_id);
     int calculate(OptType opt, uint32_t rs1, uint32_t rs2, uint32_t Rob_id);
     void clear();
     void print();

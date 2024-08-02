@@ -18,6 +18,8 @@ public:
 private:
     bool flag_next;
     int pc_next;
+public:
+//    bool ready_next;
 
 private:
     bool Rob_flag;
@@ -28,11 +30,13 @@ private:
     InstrLSB instrLsb;
 public:
     RegisterFile *reg;
+    Reservation_Station *rs;
     Rob *rob;
     Instruction *instr_in;
+    LSB *lsb;
 
 public:
-    void init(RegisterFile *reg_in, Rob *rob_in, Instruction *_instr_in);
+    void init(RegisterFile *reg_in, Rob *rob_in, Instruction *_instr_in, LSB *lsb_in, Reservation_Station *rs_in);
     void step();
     void execute(Instruction &instr);
     void func_branch(Instruction &instr);
@@ -43,10 +47,12 @@ public:
     void func_exit(Instruction &instr);
     void get_Ri(Instruction &instr);
     void get_Rj(Instruction &instr);
-    LSType get_LSType(Instruction &instr);
-    RobType get_RobType(Instruction &instr);
+    void get_Ri_Rs(Instruction &instr);
+    void get_Rj_Rs(Instruction &instr);
+    static LSType get_LSType(Instruction &instr);
+    static RobType get_RobType(Instruction &instr);
     void flush();
-
+    void display();
 };
 
 #endif //RISC5_DECODER_H

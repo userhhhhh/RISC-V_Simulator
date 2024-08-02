@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+// 容纳 size-1 个元素的循环队列
 template<typename type, int size>
 class queue{
 public:

@@ -5,11 +5,20 @@ void ALU::flush() {
     rs1 = rs1_next;
     rs2 = rs2_next;
     Rob_id = Rob_id_next;
+    ready = ready_next;
 }
 
 void ALU::step() {}
 
 void ALU::init() {}
+
+void ALU::add(OptType opt, int rs1, int rs2, uint32_t Rob_id) {
+    ready_next = true;
+    opt_next = opt;
+    rs1_next = rs1;
+    rs2_next = rs2;
+    Rob_id_next = Rob_id;
+}
 
 int ALU::get_Data() {
     return calculate(opt, rs1, rs2, Rob_id);

@@ -14,10 +14,10 @@ add_executable(RISC5 main.cpp
         src/instruction.h
         src/Load_Store_Buffer.cpp
         src/Load_Store_Buffer.h
-        src/memory.cpp
-        src/memory.h
-        src/Register_File.cpp
-        src/Register_File.h
+         src/memory.cpp
+         src/memory.h
+         src/Register_File.cpp
+         src/Register_File.h
         src/Reservation_Station.cpp
         src/Reservation_Station.h
         src/Reorder_buffer.cpp
@@ -25,6 +25,12 @@ add_executable(RISC5 main.cpp
         util/utils.cpp
         util/utils.h
         util/config.h
+#        util/Naive_Simulator.cpp
+#        util/Naive_Simulator.h
         util/CircularQueue.cpp
         util/CircularQueue.h
+
+
+
+
     )

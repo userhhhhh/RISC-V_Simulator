@@ -17,7 +17,10 @@ bool queue<type, size>::isEmpty() {
 
 template<typename type, int size>
 bool queue<type, size>::isFull() {
-    return (tail + 1) % size == head;
+    if((head - tail + size) % size == 1) {
+        return true;
+    }
+    return false;
 }
 
 template<typename type, int size>
@@ -28,7 +31,7 @@ int queue<type, size>::getSize() {
 template<typename type, int size>
 void queue<type, size>::push(type x) {
     if (isFull()) {
-        std::cout << "queue is full" << std::endl;
+//        std::cout << "queue is full" << std::endl;
         return;
     }
     tail = (tail + 1) % size;
@@ -38,7 +41,7 @@ void queue<type, size>::push(type x) {
 template<typename type, int size>
 type queue<type, size>::pop() {
     if (isEmpty()) {
-        std::cout << "queue is empty" << std::endl;
+//        std::cout << "Error: use pop() while queue is empty" << std::endl;
         return data[0];
     }
     head = (head + 1) % size;
@@ -48,7 +51,7 @@ type queue<type, size>::pop() {
 template<typename type, int size>
 type queue<type, size>::front() {
     if (isEmpty()) {
-        std::cout << "queue is empty" << std::endl;
+//        std::cout << "Error: use front() while queue is empty" << std::endl;
         return data[0];
     }
     return data[(head + 1) % size];
@@ -57,7 +60,7 @@ type queue<type, size>::front() {
 template<typename type, int size>
 type queue<type, size>::back() {
     if (isEmpty()) {
-        std::cout << "queue is empty" << std::endl;
+//        std::cout << "Error: use back() while queue is empty" << std::endl;
         return data[0];
     }
     return data[tail];
@@ -93,5 +96,5 @@ queue<type, size> &queue<type, size>::operator=(const queue<type, size> &q) {
     return *this;
 }
 
-template class queue<Rob_Entry, 16>;
-template class queue<LSB_Entry, 16>;
+template class queue<Rob_Entry, ROB_SIZE>;
+template class queue<LSB_Entry, LSB_SIZE>;
