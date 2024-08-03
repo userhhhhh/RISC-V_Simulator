@@ -37,6 +37,6 @@ int Memory::load_memory(int addr, int byte_number, bool sign_extended) {
         out = out << 8;
         out = out | int(ram[addr + i]);
     }
-    if (sign_extended) return num_extend(out, byte_number << 3);
+    if (sign_extended) return num_extend(byte_number << 3, out);
     else return out;
 }

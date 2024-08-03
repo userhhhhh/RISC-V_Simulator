@@ -11,15 +11,14 @@ class LSB;
 
 class RS_Entry {
 public:
-    bool busy;
+    bool valid;
 
     OptType opt;
     int Ri, Rj, Qi, Qj;
     uint32_t Rob_id;
     bool flag_Ri, flag_Rj;
 
-    int result;
-    bool result_ready;
+    bool ready;
 };
 
 class Reservation_Station {
@@ -40,11 +39,8 @@ public:
     void init(Rob* rob_in, LSB* lsb_in, ALU* alu_in);
     void flush();
     void step();
-    RS_Data get_data();
-    void update_data();
-//    void Send_to_ALU();
-    int get_next();
-    bool judge_next(int i);
+    void Rs_To_Rs(int Rob_id, int value);
+    void Rob_to_RS(int Rob_id, int value);
     void display();
 };
 

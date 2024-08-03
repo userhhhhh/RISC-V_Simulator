@@ -1,34 +1,44 @@
 #include "cpu.h"
 
 #define DEBUG
+//#define PC_STOP
 
 void CPU::init(Memory *mem_in) {
     mem = mem_in;
-    instr.init(mem);
-    decoder.init(&reg, &rob, &instr, &lsb, &rs);
-    rob.init(&rs, &lsb, &reg);
+    instr.init(mem, &programCounter);
+    decoder.init(&reg, &rob, &instr, &lsb, &rs, &programCounter, &predictor);
+    rob.init(&rs, &lsb, &reg, &predictor, &programCounter);
     rs.init(&rob, &lsb, &alu);
     lsb.init(&rob, &rs, &reg, mem);
     alu.init();
     reg.init(&rob);
 }
 void CPU::execute() {
-    if(!rob.buffer.isFull() && !rs.isFull() && !lsb.buffer.isFull()){
-        instr.decoder(rob.PC, decoder.pc, rob.flag_clear, decoder.flag);
+#ifdef PC_STOP
+    programCounter.display();
+#endif
+#ifdef DEBUG
+    programCounter.display();
+#endif
+    if(!rob.buffer.isFull() && !rs.isFull() && !lsb.buffer.isFull() && !programCounter.stop){
+        instr.decoder();
         decoder.step();
     }
 #ifdef DEBUG
     instr.display();
     decoder.display();
 #endif
-    rob.step();
+    rob.step(to_be_cleared);
 #ifdef DEBUG
     rob.display();
 #endif
     rs.step();
+#ifdef DEBUG
+    rs.display();
+#endif
     lsb.step();
 #ifdef DEBUG
-//    lsb.display();
+    lsb.display();
 #endif
     alu.step();
     reg.execute(rob.flag_clear);
@@ -37,8 +47,11 @@ void CPU::execute() {
 #endif
 }
 void CPU::flush() {
-    instr.flush();
-    decoder.flush();
+    if(!programCounter.stop){
+        programCounter.flush();
+        instr.flush();
+        decoder.flush();
+    }
     rob.flush();
     rs.flush();
     lsb.flush();
