@@ -2,7 +2,7 @@
 #define RISC5_CPU_H
 
 #include <iostream>
-#include "Memory.h"
+#include "memory.h"
 #include "Register_File.h"
 #include "Reorder_buffer.h"
 #include "Load_Store_Buffer.h"
