@@ -3,7 +3,7 @@ project(RISC5)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(RISC5 main.cpp
+add_executable(code main.cpp
         src/ALU.cpp
         src/ALU.h
         src/cpu.cpp
