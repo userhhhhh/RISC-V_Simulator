@@ -47,6 +47,7 @@ public:
     uint32_t rd;
     int value;
     int other;
+    int rs1, rs2;
 
     bool ready;
 };

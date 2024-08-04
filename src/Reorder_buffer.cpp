@@ -1,11 +1,15 @@
 #include "Reorder_buffer.h"
 
+int total = 0;
+
 Rob_Entry::Rob_Entry(const InstrRob &instr) {
     ready = instr.ready;
     type = instr.Rob_opt;
     value = instr.value;
     rd = instr.rd;
     other = instr.other;
+    rs1 = instr.rs1;
+    rs2 = instr.rs2;
 }
 
 void Rob::commit(bool &to_be_cleared) {
@@ -13,9 +17,10 @@ void Rob::commit(bool &to_be_cleared) {
     Rob_Entry entry = *buffer.begin();
     if(!entry.ready) return;
     buffer_next.pop();
+    int actualValue;
+    total++;
     switch (entry.type) {
         case RobType::jalr:
-            // TODO: not sure
             reg->write(entry.rd, (buffer.head + 1) % ROB_SIZE, entry.other);
             rs->Rob_to_RS(entry.id, entry.other);
             programCounter->set_stop(false);
@@ -30,7 +35,8 @@ void Rob::commit(bool &to_be_cleared) {
             rs->Rob_to_RS(entry.id, entry.value);
             break;
         case RobType::store:
-            lsb->Rob_to_lsb(entry.id, entry.other, entry.value);
+            actualValue = reg->registers[entry.rs2].value;
+            lsb->Rob_to_lsb(entry.id, actualValue, entry.value);
             break;
         case RobType::branch:
             // value是 rs传回的值
@@ -57,8 +63,11 @@ void Rob::commit(bool &to_be_cleared) {
             if(entry.value){
                 PC_next = entry.value;
             }
+            break;
         case RobType::exit:
-            throw reg->registers[10].value & 0xff;
+            int x = reg->registers[10].value & 0xff;
+            std::cout << x << std::endl;
+            exit(0);
     }
 }
 

@@ -8,6 +8,7 @@ public:
     int pc;
     bool flag_set_by_decoder = false;
     bool stop = false;                //处理 jalr的情况
+    bool wait = false;                //处理停止的情况
 public:
     int pc_next;
     bool flag_set_by_decoder_next = false;

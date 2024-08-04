@@ -23,20 +23,33 @@ void RegisterFile::flush() {
         registers[i] = registers_next[i];
         modify[i] = 0;
     }
+    registers[0].value = 0;
+    registers[0].Is_dependent = false;
+    registers_next[0].value = 0;
+    registers_next[0].Is_dependent = false;
 }
 
 void RegisterFile::write(uint32_t reg_index, int Rob_index, int value) {
+    if(reg_index == 10 && value == 255){
+        int x = registers[10].value & 0xff;
+        std::cout << x << std::endl;
+        exit(0);
+    }
     registers_next[reg_index].value = value;
-    if(registers_next[reg_index].Is_dependent) {
-        if(Rob_index == registers_next[reg_index].Rob_index) {
+    if(registers[reg_index].Is_dependent) {
+        if(Rob_index == registers[reg_index].Rob_index) {
             registers_next[reg_index].Is_dependent = false;
             registers_next[reg_index].Rob_index = -1;
         }
+        else {
+            registers_next[reg_index].Is_dependent = true;
+            registers_next[reg_index].Rob_index = registers[reg_index].Rob_index;
+        }
     }
-//    if(Rob_index == registers[reg_index].Rob_index && ) {
-//        registers_next[reg_index].Is_dependent = false;
-//        registers_next[reg_index].Rob_index = -1;
-//    }
+    registers[0].value = 0;
+    registers[0].Is_dependent = false;
+    registers_next[0].value = 0;
+    registers_next[0].Is_dependent = false;
 }
 
 void RegisterFile::clear() {
@@ -60,7 +73,7 @@ void RegisterFile::display() {
     for (int i = 0; i < 32; i++) {
         std::cout << "Register " << i << ": " << registers[i].value << "     ";
         std::cout << "Is dependent: " << registers[i].Is_dependent << "     ";
-        std::cout << "ROB index: " << registers[i].Rob_index ;
+        std::cout << "ROB index: " << registers[i].Rob_index << "             ";
         std::cout << "Register_next " << i << ": " << registers_next[i].value << "     ";
         std::cout << "Is dependent_next: " << registers_next[i].Is_dependent << "     ";
         std::cout << "ROB index_next: " << registers_next[i].Rob_index ;

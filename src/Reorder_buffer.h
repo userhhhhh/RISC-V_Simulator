@@ -14,6 +14,8 @@ class RegisterFile;
 class Reservation_Station;
 class LSB;
 
+extern int total;
+
 class Rob_Entry {
 public:
     int id;      //单元在队列中的位置

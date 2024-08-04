@@ -24,6 +24,8 @@ void Decoder::execute(Instruction &instr) {
             instrRob.rd = instr.instr_next.rd;
             instrRob.value = instr.instr_next.imm;
             instrRob.ready = true;
+            instrRob.rs1 = instr.instr_next.rs1;
+            instrRob.rs2 = instr.instr_next.rs2;
             Rob_flag = true;
             reg->update_independence(instrRob.rd, rob->get_tail_next());
             break;
@@ -33,6 +35,8 @@ void Decoder::execute(Instruction &instr) {
             instrRob.rd = instr.instr_next.rd;
             instrRob.value = programCounter->pc + instr.instr_next.imm;
             instrRob.ready = true;
+            instrRob.rs1 = instr.instr_next.rs1;
+            instrRob.rs2 = instr.instr_next.rs2;
             reg->update_independence(instrRob.rd, rob->get_tail_next());
             Rob_flag = true;
             break;
@@ -41,6 +45,8 @@ void Decoder::execute(Instruction &instr) {
             instrRob.Rob_opt = RobType::reg;
             instrRob.rd = instr.instr_next.rd;
             instrRob.value = programCounter->pc + 4; //存储地址
+            instrRob.rs1 = instr.instr_next.rs1;
+            instrRob.rs2 = instr.instr_next.rs2;
             programCounter->set_pc_next(programCounter->pc + instr.instr_next.imm);
             reg->update_independence(instrRob.rd, rob->get_tail_next());
             instrRob.ready = true;
@@ -50,8 +56,9 @@ void Decoder::execute(Instruction &instr) {
             instrRob.opt = OptType::JALR;
             instrRob.Rob_opt = RobType::jalr;
             instrRob.rd = instr.instr_next.rd;
+            instrRob.rs1 = instr.instr_next.rs1;
+            instrRob.rs2 = instr.instr_next.rs2;
             instrRob.other = programCounter->pc + 4;   //这个特殊，值存在 other里面，计算出的 pc地址为 value
-            reg->update_independence(instrRob.rd, rob->get_tail_next());
             instrRob.ready = false;
             Rob_flag = true;
 
@@ -65,6 +72,7 @@ void Decoder::execute(Instruction &instr) {
             instrRs.Rob_id = rob->get_tail_next();
             RS_flag = true;
 
+            reg->update_independence(instrRob.rd, rob->get_tail_next());
             programCounter->set_stop(true);
             break;
         case OptType::BEQ:
@@ -72,7 +80,8 @@ void Decoder::execute(Instruction &instr) {
         case OptType::BLT:
         case OptType::BGE:
         case OptType::BLTU:
-        case OptType::BGEU: func_branch(instr); break;
+        case OptType::BGEU:
+            process(instr); break;
 
         case OptType::LB:
         case OptType::LH:
@@ -119,10 +128,82 @@ void Decoder::execute(Instruction &instr) {
     }
 }
 
+void Decoder::process(Instruction &instr){
+    while(!rob->buffer.isEmpty() || !rs->isEmpty() || !lsb->buffer.isEmpty()){
+        bool tmp = false;
+        rob->step(tmp);
+        rs->step();
+        lsb->step();
+        rob->flush();
+        rs->flush();
+        lsb->flush();
+        reg->flush();
+    }
+    bool tmp;
+    int value1, value2;
+    reg->get(instr.instr_next.rs1, tmp, value1);
+    reg->get(instr.instr_next.rs2, tmp, value2);
+    switch(instr.instr_next.opt){
+        case OptType::BEQ:
+            if(value1 == value2){
+                programCounter->set_pc_next(programCounter->pc + instr.instr_next.imm);
+            }
+            else{
+                programCounter->set_pc_next(programCounter->pc + 4);
+            }
+            break;
+        case OptType::BNE:
+            if(value1 != value2){
+                programCounter->set_pc_next(programCounter->pc + instr.instr_next.imm);
+            }
+            else{
+                programCounter->set_pc_next(programCounter->pc + 4);
+            }
+            break;
+        case OptType::BLT:
+            if(value1 < value2){
+                programCounter->set_pc_next(programCounter->pc + instr.instr_next.imm);
+            }
+            else{
+                programCounter->set_pc_next(programCounter->pc + 4);
+            }
+            break;
+        case OptType::BGE:
+            if(value1 >= value2){
+                programCounter->set_pc_next(programCounter->pc + instr.instr_next.imm);
+            }
+            else{
+                programCounter->set_pc_next(programCounter->pc + 4);
+            }
+            break;
+        case OptType::BLTU:
+            if((unsigned)value1 < (unsigned)value2){
+                programCounter->set_pc_next(programCounter->pc + instr.instr_next.imm);
+            }
+            else{
+                programCounter->set_pc_next(programCounter->pc + 4);
+            }
+            break;
+        case OptType::BGEU:
+            if((unsigned)value1 >= (unsigned)value2){
+                programCounter->set_pc_next(programCounter->pc + instr.instr_next.imm);
+            }
+            else{
+                programCounter->set_pc_next(programCounter->pc + 4);
+            }
+            break;
+        default: break;
+    }
+}
+
+
 void Decoder::func_branch(Instruction &instr){
+
     instrRob.opt = instr.instr_next.opt;
     instrRob.Rob_opt = get_RobType(instr);
     instrRob.ready = false;
+    instrRob.rs1 = instr.instr_next.rs1;
+    instrRob.rs2 = instr.instr_next.rs2;
     instrRob.value = 0;
     Rob_flag = true;
     if(predictor->jump(programCounter->pc)){
@@ -175,7 +256,8 @@ void Decoder::func_load(Instruction &instr){
     instrRob.rd = instr.instr_next.rd;
     instrRob.ready = false;
     instrRob.value = 0;
-    reg->update_independence(instrRob.rd, rob->get_tail_next());
+    instrRob.rs1 = instr.instr_next.rs1;
+    instrRob.rs2 = instr.instr_next.rs2;
     Rob_flag = true;
 
     instrRs.opt = instr.instr_next.opt;
@@ -191,11 +273,15 @@ void Decoder::func_load(Instruction &instr){
     instrLsb.Rob_id = rob->get_tail_next();
     instrLsb.ready = false;
     LSB_flag = true;
+
+    reg->update_independence(instrRob.rd, rob->get_tail_next());
 }
 void Decoder::func_store(Instruction &instr){
     instrRob.opt = instr.instr_next.opt;
     instrRob.Rob_opt = get_RobType(instr);
     instrRob.rd = instr.instr_next.rd;
+    instrRob.rs1 = instr.instr_next.rs1;
+    instrRob.rs2 = instr.instr_next.rs2;
     instrRob.ready = false;
     instrRob.value = 0;
     Rob_flag = true;
@@ -291,8 +377,9 @@ void Decoder::func_cal_imm(Instruction &instr){
     instrRob.Rob_opt = get_RobType(instr);
     instrRob.rd = instr.instr_next.rd;
     instrRob.value = instr.instr_next.imm;
+    instrRob.rs1 = instr.instr_next.rs1;
+    instrRob.rs2 = instr.instr_next.rs2;
     instrRob.ready = false;
-    reg->update_independence(instrRob.rd, rob->get_tail_next());
     Rob_flag = true;
 
     instrRs.opt = instr.instr_next.opt;
@@ -303,14 +390,17 @@ void Decoder::func_cal_imm(Instruction &instr){
     else instrRs.ready = true;
     instrRs.Rob_id = rob->get_tail_next();
     RS_flag = true;
+
+    reg->update_independence(instrRob.rd, rob->get_tail_next());
 }
 void Decoder::func_cal(Instruction &instr){
     instrRob.opt = instr.instr_next.opt;
     instrRob.Rob_opt = get_RobType(instr);
     instrRob.rd = instr.instr_next.rd;
+    instrRob.rs1 = instr.instr_next.rs1;
+    instrRob.rs2 = instr.instr_next.rs2;
     instrRob.value = 0;
     instrRob.ready = false;
-    reg->update_independence(instrRob.rd, rob->get_tail_next());
     Rob_flag = true;
 
     instrRs.opt = instr.instr_next.opt;
@@ -320,6 +410,8 @@ void Decoder::func_cal(Instruction &instr){
     else instrRs.ready = true;
     instrRs.Rob_id = rob->get_tail_next();
     RS_flag = true;
+
+    reg->update_independence(instrRob.rd, rob->get_tail_next());
 }
 void Decoder::func_exit(Instruction &instr) {
     instrRob.opt = OptType::DELETE;

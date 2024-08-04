@@ -17,6 +17,10 @@ void Instruction::decoder() {
 }
 
 void Instruction::decode(uint32_t src) {
+//    if(src == 0x0ff00513){
+//        instr_next.opt = OptType::DELETE;
+//        return;
+//    }
     switch (fragment(6, 0, src)) {
         case 0b0110111:
             instr_next.type = InstructionType::U;

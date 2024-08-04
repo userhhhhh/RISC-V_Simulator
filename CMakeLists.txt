@@ -29,8 +29,8 @@ add_executable(RISC5 main.cpp
 #        util/Naive_Simulator.h
         util/CircularQueue.cpp
         util/CircularQueue.h
-
-
-
-
-    )
+        src/Predictor.cpp
+        src/Predictor.h
+        src/Program_Counter.cpp
+        src/Program_Counter.h
+)

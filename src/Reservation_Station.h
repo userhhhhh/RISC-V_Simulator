@@ -42,6 +42,7 @@ public:
     void Rs_To_Rs(int Rob_id, int value);
     void Rob_to_RS(int Rob_id, int value);
     void display();
+    bool isEmpty();
 };
 
 #endif //RISC5_RESERVATION_STATION_H

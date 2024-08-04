@@ -8,6 +8,10 @@ void ProgramCounter::set_pc_next(int index) {
     flag_set_by_decoder_next = true;
 }
 void ProgramCounter::flush() {
+//    if(wait){
+//        wait = false;
+//        return;
+//    }
     pc = pc_next;
     flag_set_by_decoder = flag_set_by_decoder_next;
     flag_set_by_decoder_next = false;

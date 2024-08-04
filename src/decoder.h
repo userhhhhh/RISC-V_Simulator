@@ -47,6 +47,7 @@ public:
     static RobType get_RobType(Instruction &instr);
     void flush();
     void display();
+    void process(Instruction &instr);
 };
 
 #endif //RISC5_DECODER_H

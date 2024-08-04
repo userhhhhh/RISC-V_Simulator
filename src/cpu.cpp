@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-#define DEBUG
+//#define DEBUG
 //#define PC_STOP
 
 void CPU::init(Memory *mem_in) {
@@ -20,9 +20,16 @@ void CPU::execute() {
 #ifdef DEBUG
     programCounter.display();
 #endif
-    if(!rob.buffer.isFull() && !rs.isFull() && !lsb.buffer.isFull() && !programCounter.stop){
+    if(!programCounter.stop && !rob.buffer.isFull() && !rs.isFull() && !lsb.buffer.isFull()){
         instr.decoder();
         decoder.step();
+    }
+    if(programCounter.stop){
+        programCounter.stop = true;
+    } else {
+        if(rob.buffer.isFull() || rs.isFull() || lsb.buffer.isFull()){
+            programCounter.wait = true;
+        }
     }
 #ifdef DEBUG
     instr.display();
@@ -48,7 +55,6 @@ void CPU::execute() {
 }
 void CPU::flush() {
     if(!programCounter.stop){
-        programCounter.flush();
         instr.flush();
         decoder.flush();
     }
@@ -57,6 +63,12 @@ void CPU::flush() {
     lsb.flush();
     alu.flush();
     reg.flush();
+    if(!programCounter.wait){
+        programCounter.flush();
+    }
+    if(programCounter.wait){
+        programCounter.wait = false;
+    }
 }
 bool CPU::finish() {
     return false;
