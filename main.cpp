@@ -2,9 +2,10 @@
 #include "src/memory.h"
 #include "src/cpu.h"
 #include <filesystem>
+#include "util/Naive_Simulator.h"
+
 
 int main() {
-    //备注：借鉴了 wankupi
      std::cout << "Current working directory: "
                << std::filesystem::current_path() << std::endl;
      freopen("/home/hqs123/class_code/RISC-V-Simulator-2024/sample/sample.data","r",stdin);
@@ -16,15 +17,21 @@ int main() {
     CPU cpu;
     cpu.init(&mem);
     int count = 0;
+//    Naive_Simulator sim;
+//    sim.init(&mem);
 
-    while(!cpu.finish()) {
-        std::cout << "++++++++++++++ " << count << " ++++++++++++++" << std::endl;
-        if(count == 8) {
-            std::cout << "Here" << std::endl;
-        }
+    int ans = 0;
+    while(!cpu.finish()){
+//        std::cout << "++++++++++++++ " << count << " ++++++++++++++" << std::endl;
+//        std::cout << "------- " << total << " ---------" << std::endl;
+//        if(count == 100) {
+//            std::cout << "Here" << std::endl;
+//        }
         cpu.flush();
         cpu.execute();
-        std::cout << "++++++++++++++++++++++++++++" << std::endl;
+//        std::cout << "++++++++++++++++++++++++++++" << std::endl;
         count++;
+//        ans = sim.status.regs.registers[10].value & 255;
     }
+//    std::cout << ans << std::endl;
 }

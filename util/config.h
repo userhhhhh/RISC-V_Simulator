@@ -5,12 +5,13 @@
 #include <cstdint>
 
 const int MEMORY_SIZE = 1 << 20;
-const int RS_SIZE = 16;
-const int LSB_SIZE = 16;
+const int RS_SIZE = 6;
+const int LSB_SIZE = 6;
 const int ROB_SIZE = 2;
+const int PREDICTOR_SIZE = 256;
 
 enum class RobType {
-    reg, store, branch, exit
+    reg, load, store, branch, exit, jalr
 };
 enum class LSType {
     LB, LH, LW, LBU, LHU,
@@ -42,9 +43,12 @@ class InstrRob{
 public:
     OptType opt;
     RobType Rob_opt;
+
     uint32_t rd;
     int value;
-    uint32_t pc_addr;
+    int other;
+    int rs1, rs2;
+
     bool ready;
 };
 class InstrRS{
@@ -52,16 +56,18 @@ public:
     OptType opt;
     int Ri, Rj, Qi, Qj;
     bool flag_Ri, flag_Rj;
-    int result;
     int Rob_id;
+
+    bool ready;
 };
 class InstrLSB{
 public:
+    bool ready;
+
     LSType opt;
-    uint32_t Ri, Rj, Qi, Qj;
-    bool flag_Ri, flag_Rj;
-    int offset;
-    int result;
+    int value1;
+    int value2; // 两个寄存器的值
+
     int Rob_id;
 };
 

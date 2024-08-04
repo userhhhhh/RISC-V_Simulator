@@ -20,10 +20,6 @@ void ALU::add(OptType opt, int rs1, int rs2, uint32_t Rob_id) {
     Rob_id_next = Rob_id;
 }
 
-int ALU::get_Data() {
-    return calculate(opt, rs1, rs2, Rob_id);
-}
-
 int ALU::calculate(OptType opt, uint32_t vj, uint32_t vk, uint32_t Rob_id) {
     int result;
     switch (opt) {

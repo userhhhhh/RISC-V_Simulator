@@ -1,17 +1,11 @@
 #include "Load_Store_Buffer.h"
 
-LSB_Entry::LSB_Entry(const InstrLSB &instr, bool busy_in) {
-    ready = false;
-    offset = instr.offset;
+LSB_Entry::LSB_Entry(const InstrLSB &instr) {
+    ready = instr.ready;
+    value1 = instr.value1;
+    value2 = instr.value2;
     opt = instr.opt;
-    Ri = instr.Ri;
-    Rj = instr.Rj;
-    Qi = instr.Qi;
-    Qj = instr.Qj;
-    flag_Ri = instr.flag_Ri;
-    flag_Rj = instr.flag_Rj;
-    result = 0;
-    Rob_id = -1;
+    Rob_id = instr.Rob_id;
 }
 
 void LSB::init(Rob *rob_in, Reservation_Station *rs_in, RegisterFile *reg_file_in, Memory *mem_in) {
@@ -22,171 +16,93 @@ void LSB::init(Rob *rob_in, Reservation_Station *rs_in, RegisterFile *reg_file_i
 }
 
 void LSB::add(InstrLSB &instrLsb) {
-    int index = -1;
-    bool flag = false;
-    for (int i = 0; i < LSB_SIZE; ++i) {
-        if (buffer[i].busy) continue;
-        flag = true;
-        index = i;
-    }
-    if (!flag) return;
-    if(!buffer[index].flag_Ri && !buffer[index].flag_Rj){
-        buffer[index].ready = true;
-    }
-    buffer[index].opt = instrLsb.opt;
-    buffer[index].Ri = instrLsb.Ri;
-    buffer[index].Rj = instrLsb.Rj;
-    buffer[index].Qi = instrLsb.Qi;
-    buffer[index].Qj = instrLsb.Qj;
-    buffer[index].flag_Ri = instrLsb.flag_Ri;
-    buffer[index].flag_Rj = instrLsb.flag_Rj;
-    buffer[index].result = instrLsb.result;
-    buffer[index].Rob_id = instrLsb.Rob_id;
-    buffer[index].to_execute = false;
+    LSB_Entry entry(instrLsb);
+    buffer_next.push(entry);
 }
 
 void LSB::flush() {
     buffer = buffer_next;
-    result = result_next;
 }
 
 void LSB::step() {
+    if (buffer.isEmpty()) return;
+    auto entry = buffer.front();
+    if(!entry.ready) return;
 
-    update_data();
-
-    int index = (buffer.head + 1) % LSB_SIZE;
-    auto entry = buffer[index];
-    if(entry.opt >= LSType::LB && entry.opt <= LSType::LHU){
-        if(!entry.flag_Ri && !entry.flag_Rj){
-            buffer[index].ready = true;
-            buffer_next[index].ready = true;
-        }
-    }
-    if(entry.opt >= LSType::SB && entry.opt <= LSType::SW) {
-        if ((rob->buffer.head + 1) % ROB_SIZE != buffer.front().Rob_id) {
-            return;
-        }
-    }
     buffer_next.pop();
-
-//    int get_Ri, get_Rj;
-//    if (!entry.flag_Ri) get_Ri = entry.Ri;
-//    else get_Ri = rs->buffer[entry.Qi].result;
-//    if (!entry.flag_Rj) get_Rj = entry.Rj;
-//    else get_Rj = rs->buffer[entry.Qj].result;
 
     switch (entry.opt) {
         case LSType::LB:
-            result_next.value = mem->load_memory(entry.Ri + entry.offset, 1, true);
-            result_next.ready = true;
+            entry.value2 = mem->load_memory(entry.value1, 1, true);
+            rob->update_data(entry.Rob_id, entry.value2);
             break;
         case LSType::LH:
-            result_next.value = mem->load_memory(entry.Ri + entry.offset, 2, true);
-            result_next.ready = true;
+            entry.value2 = mem->load_memory(entry.value1, 2, true);
+            rob->update_data(entry.Rob_id, entry.value2);
             break;
         case LSType::LW:
-            result_next.value = mem->load_memory(entry.Ri + entry.offset, 4, true);
-            result_next.ready = true;
+            entry.value2 = mem->load_memory(entry.value1, 4, true);
+            rob->update_data(entry.Rob_id, entry.value2);
             break;
         case LSType::LBU:
-            result_next.value = mem->load_memory(entry.Ri + entry.offset, 1, false);
-            result_next.ready = true;
+            entry.value2 = mem->load_memory(entry.value1, 1, false);
+            rob->update_data(entry.Rob_id, entry.value2);
             break;
         case LSType::LHU:
-            result_next.value = mem->load_memory(entry.Ri + entry.offset, 2, false);
-            result_next.ready = true;
+            entry.value2 = mem->load_memory(entry.value1, 2, false);
+            rob->update_data(entry.Rob_id, entry.value2);
             break;
 
         case LSType::SB:
-            mem->store_memory(entry.Ri + entry.offset, entry.Rj, 1);
-            entry.ready = true;
+            mem->store_memory(entry.value1, entry.value2, 1);
             break;
         case LSType::SH:
-            mem->store_memory(entry.Ri + entry.offset, entry.Rj, 2);
-            entry.ready = true;
+            mem->store_memory(entry.value1, entry.value2, 2);
             break;
         case LSType::SW:
-            mem->store_memory(entry.Ri + entry.offset, entry.Rj, 4);
-            entry.ready = true;
+            mem->store_memory(entry.value1, entry.value2, 4);
             break;
         default:
             break;
     }
-
-//    if (entry.opt >= LSType::LB && entry.opt <= LSType::LHU) {
-//        // TODO: ?
-//    }
 }
 
-bool LSB::judge_ready(int i) {
-    RS_Data rsData = rs->get_data();
-    bool judge1 = buffer[i].flag_Ri || (!buffer[i].flag_Ri && rsData.Rob_id == buffer[i].Rob_id);
-    bool judge2 = buffer[i].flag_Rj || (!buffer[i].flag_Rj && rsData.Rob_id == buffer[i].Rob_id);
-    bool judge3 = buffer[i].Rob_id == rob->buffer.head + 1;
-    bool judge4 = buffer[i].busy;
-    if (judge1 && judge2 && judge3 && judge4) {
-        return true;
-    }
-    return false;
-}
-
-bool LSB::judge_stop(int i) {
-    if (buffer[i].busy && buffer[i].opt >= LSType::SB && buffer[i].opt <= LSType::SW) {
-        return true;
-    }
-    return false;
-}
-
-void LSB::push(LSB_Entry x) {
-    buffer_next.push(x);
-}
-
-void LSB::update_data() {
-    RS_Data rsData = rs->get_data();
-    if (rsData.ready) {
-        for (int i = 0; i < LSB_SIZE; i++) {
-            if (buffer[i].opt == LSType::DELETE) continue;
-            if (buffer[i].Qi == rsData.Rob_id && buffer[i].flag_Ri) {
-                buffer_next[i].Qi = 0;
-                buffer_next[i].Ri = rsData.value;
-                buffer_next[i].flag_Ri = false;
-            }
-            if (buffer[i].Qj == rsData.Rob_id && buffer[i].flag_Rj) {
-                buffer_next[i].Qj = 0;
-                buffer_next[i].Rj = rsData.value;
-                buffer_next[i].flag_Rj = false;
-            }
+void LSB::Rob_to_lsb(int Rob_id, int value, int addr) {
+    for (int i = 0; i < LSB_SIZE; i++) {
+        if (buffer[i].Rob_id == Rob_id) {
+            buffer_next[i].value1 = addr;
+            buffer_next[i].value2 = value;
+            buffer_next[i].ready = true;
         }
     }
-//    if ((rob->buffer.head + 1) % ROB_SIZE == buffer.front().Rob_id && !buffer.front().to_execute) {
-//        buffer[buffer.head + 1].to_execute = true;
-//    }
 }
-
-LSB_Data LSB::get_data() {
-//    LSB_Data data;
-//    data.ready = buffer.front().ready;
-//    data.Rob_id = buffer.front().Rob_id;
-//    data.value = result.value;
-//    return data
-    return result;
-}
-
 void LSB::display() {
     std::cout << "-------LSB--------" << std::endl;
-    for (int i = 0; i < LSB_SIZE; i++) {
-        std::cout << "LSB[" << i << "]: ";
-        std::cout << "ready: " << buffer[i].ready << " ";
-        std::cout << "busy: " << buffer[i].busy << " ";
-        std::cout << "Ri: " << buffer[i].Ri << " ";
-        std::cout << "Rj: " << buffer[i].Rj << " ";
-        std::cout << "Qi: " << buffer[i].Qi << " ";
-        std::cout << "Qj: " << buffer[i].Qj << " ";
-        std::cout << "flag_Ri: " << buffer[i].flag_Ri << " ";
-        std::cout << "flag_Rj: " << buffer[i].flag_Rj << " ";
-        std::cout << "result: " << buffer[i].result << " ";
-        std::cout << "Rob_id: " << buffer[i].Rob_id << " ";
-        std::cout << "to_execute: " << buffer[i].to_execute << std::endl;
+    int i = 0;
+    for (auto it = buffer.begin(); it != buffer.end(); ++it) {
+        i++;
+        std::cout << "Ready:" << it->ready << "        ";
+        std::cout << "Value1: " << it->value1 << "       ";
+        std::cout << "Value2: " << it->value2 << "       ";
+        std::cout << "Rob_id: " << it->Rob_id << std::endl;
     }
+    std::cout << "LSB size: " << i << std::endl;
+    int j = 0;
+    for(auto it = buffer_next.begin(); it != buffer_next.end(); ++it){
+        j++;
+        std::cout << "Ready:" << it->ready << "        ";
+        std::cout << "Value1: " << it->value1 << "       ";
+        std::cout << "Value2: " << it->value2 << "       ";
+        std::cout << "Rob_id: " << it->Rob_id << std::endl;
+    }
+    std::cout << "LSB_next size: " << j << std::endl;
     std::cout << "----------------------" << std::endl;
+}
+void LSB::Rs_to_lsb(int Rob_id, int value) {
+    for(int i = 0; i < LSB_SIZE; i++){
+        if(buffer[i].Rob_id == Rob_id){
+            buffer_next[i].value1 = value;
+            buffer_next[i].ready = true;
+        }
+    }
 }

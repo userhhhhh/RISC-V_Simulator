@@ -31,7 +31,7 @@ int queue<type, size>::getSize() {
 template<typename type, int size>
 void queue<type, size>::push(type x) {
     if (isFull()) {
-//        std::cout << "queue is full" << std::endl;
+
         return;
     }
     tail = (tail + 1) % size;

@@ -11,6 +11,8 @@
 #include "ALU.h"
 #include "instruction.h"
 #include "../util/config.h"
+#include "../src/Program_Counter.h"
+#include "Predictor.h"
 
 class CPU {
 private:
@@ -22,6 +24,11 @@ private:
     Decoder decoder;
     ALU alu;
     Instruction instr;
+    ProgramCounter programCounter;
+    Predictor predictor;
+
+public:
+    bool to_be_cleared = false;
 
 public:
     CPU() = default;

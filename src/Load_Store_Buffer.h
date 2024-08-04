@@ -16,29 +16,27 @@ class RegisterFile;
 class LSB_Entry {
 public:
     bool ready;
-    bool busy;
 
     LSType opt;
-    uint32_t Ri, Rj, Qi, Qj;
-    bool flag_Ri, flag_Rj;
-    int offset;
-    int result;
+    int value1;
+    int value2; // 两个寄存器的值
+
+    // load
+    // value1：load的地址  value2：load的值
+    // store
+    // value1：store的地址  value2：store的值
 
     int Rob_id = -1;
 
-    bool to_execute; //判断能否执行
-
 public:
     LSB_Entry() = default;
-    LSB_Entry(const InstrLSB &instr, bool busy_in);
+    LSB_Entry(const InstrLSB &instr);
 };
 
 class LSB {
 public:
-    LSB_Data result;
     queue<LSB_Entry, LSB_SIZE> buffer;
 private:
-    LSB_Data result_next;
     queue<LSB_Entry, LSB_SIZE> buffer_next;
 
 private:
@@ -52,16 +50,9 @@ public:
     void init(Rob *rob_in, Reservation_Station *rs_in, RegisterFile *reg_file_in, Memory *mem_in);
     void flush();
     void step();
-    void push(LSB_Entry x);
-    LSB_Data get_data();
-    void update_data();
     void display();
-    bool judge_ready(int i);
-    bool judge_stop(int i);
-
-    void clear();
-    void print();
-    LSB& operator= (const LSB& lsb);
+    void Rob_to_lsb(int Rob_id, int value, int addr);
+    void Rs_to_lsb(int Rob_id, int value); //告诉地址
 };
 
 #endif //RISC5_LOAD_STORE_BUFFER_H
