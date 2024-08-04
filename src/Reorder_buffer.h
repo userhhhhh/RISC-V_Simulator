@@ -7,7 +7,7 @@
 #include "../util/config.h"
 #include "../util/CircularQueue.h"
 #include "Program_Counter.h"
-#include "Instruction.h"
+#include "instruction.h"
 #include "Predictor.h"
 
 class RegisterFile;
